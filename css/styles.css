@@ -1840,15 +1840,15 @@ thead th{font-weight:600;}
   --shadow-lg:var(--n-raise), 0 24px 50px -20px rgba(90,100,140,.4);
 }
 :root[data-theme="dark"]{
-  --bg:#262B4B;
-  --surface:#262B4B;
-  --surface-alt:#2B3154;
-  --surface-hover:#303760;
-  --border:rgba(255,255,255,.045);
-  --border-strong:rgba(255,255,255,.08);
-  --ink:#F0F2FF;
-  --ink-soft:#A6ACD6;
-  --ink-faint:#6E76A8;
+  --bg:#0E0E0E;
+  --surface:#0E0E0E;
+  --surface-alt:#161616;
+  --surface-hover:#1E1E1E;
+  --border:rgba(255,255,255,.05);
+  --border-strong:rgba(255,255,255,.09);
+  --ink:#F2F2F2;
+  --ink-soft:#ABABAB;
+  --ink-faint:#707070;
   --accent:#FF4FA0;
   --accent-hover:#FF6FB2;
   --accent-soft:rgba(255,79,160,.15);
@@ -1864,10 +1864,10 @@ thead th{font-weight:600;}
   --success:#3DDBA4;
   --success-soft:rgba(61,219,164,.12);
   --grad:linear-gradient(135deg,#FF5CA8 0%,#FF2E7E 100%);
-  --n-raise:-7px -7px 14px rgba(255,255,255,.055), 7px 7px 16px rgba(6,9,28,.6);
-  --n-raise-sm:-4px -4px 8px rgba(255,255,255,.05), 4px 4px 10px rgba(6,9,28,.55);
-  --n-inset:inset 5px 5px 10px rgba(6,9,28,.55), inset -5px -5px 10px rgba(255,255,255,.05);
-  --n-inset-sm:inset 3px 3px 6px rgba(6,9,28,.5), inset -3px -3px 6px rgba(255,255,255,.045);
+  --n-raise:-7px -7px 14px rgba(255,255,255,.055), 7px 7px 16px rgba(0,0,0,.6);
+  --n-raise-sm:-4px -4px 8px rgba(255,255,255,.05), 4px 4px 10px rgba(0,0,0,.55);
+  --n-inset:inset 5px 5px 10px rgba(0,0,0,.55), inset -5px -5px 10px rgba(255,255,255,.05);
+  --n-inset-sm:inset 3px 3px 6px rgba(0,0,0,.5), inset -3px -3px 6px rgba(255,255,255,.045);
   --glow-1:0 6px 18px -6px rgba(255,79,160,.5);
   --glow-2:0 8px 24px -6px rgba(255,79,160,.6);
   --shadow-sm:var(--n-raise-sm);
@@ -1887,7 +1887,7 @@ body{background:var(--bg);}
   box-shadow:var(--n-raise);
 }
 .modal{box-shadow:var(--n-raise), 0 30px 60px -24px rgba(0,0,0,.55);}
-.modal-overlay{background:rgba(10,12,32,.55);backdrop-filter:blur(3px);}
+.modal-overlay{background:rgba(0,0,0,.55);backdrop-filter:blur(3px);}
 .dp-pop,.cs-pop{border-radius:16px;box-shadow:var(--n-raise), 0 18px 40px -16px rgba(0,0,0,.45);}
 .stat-card:hover{border:none;box-shadow:var(--n-raise), var(--glow-1);transform:translateY(-2px);}
 
@@ -2131,10 +2131,10 @@ input:focus,select:focus,.field textarea:focus,.dp-input.open,.cs-trigger.open,.
   --grad:linear-gradient(135deg,#54B4FF 0%,#2E7FF0 100%);
   --glow-1:0 5px 14px -5px rgba(66,165,255,.45);
   --glow-2:0 6px 18px -5px rgba(66,165,255,.55);
-  --n-raise:-4px -4px 8px rgba(255,255,255,.035), 4px 4px 10px rgba(6,9,28,.38);
-  --n-raise-sm:-2px -2px 5px rgba(255,255,255,.03), 2px 2px 6px rgba(6,9,28,.35);
-  --n-inset:inset 3px 3px 6px rgba(6,9,28,.35), inset -3px -3px 6px rgba(255,255,255,.032);
-  --n-inset-sm:inset 2px 2px 4px rgba(6,9,28,.32), inset -2px -2px 4px rgba(255,255,255,.028);
+  --n-raise:-4px -4px 8px rgba(255,255,255,.035), 4px 4px 10px rgba(0,0,0,.38);
+  --n-raise-sm:-2px -2px 5px rgba(255,255,255,.03), 2px 2px 6px rgba(0,0,0,.35);
+  --n-inset:inset 3px 3px 6px rgba(0,0,0,.35), inset -3px -3px 6px rgba(255,255,255,.032);
+  --n-inset-sm:inset 2px 2px 4px rgba(0,0,0,.32), inset -2px -2px 4px rgba(255,255,255,.028);
   --shadow-sm:var(--n-raise-sm);
   --shadow-md:var(--n-raise);
   --shadow-lg:var(--n-raise);
