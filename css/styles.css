@@ -41,12 +41,12 @@
     --font-mono:'JetBrains Mono','Courier New',monospace;
   }
   :root[data-theme="dark"]{
-    --bg:#08090D;
-    --surface:#14161D;
-    --surface-alt:#191C25;
-    --surface-hover:#20263A;
-    --border:#232733;
-    --border-strong:#323747;
+    --bg:#0A0A0A;
+    --surface:#141414;
+    --surface-alt:#1A1A1A;
+    --surface-hover:#222222;
+    --border:#262626;
+    --border-strong:#343434;
     --ink:#F0F1F7;
     --ink-soft:#9DA3B8;
     --ink-faint:#6C7288;
