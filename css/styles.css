@@ -2200,6 +2200,24 @@ input:focus,select:focus,.field textarea:focus,.dp-input.open,.cs-trigger.open,.
 .theme-color-row input[type=color]::-webkit-color-swatch-wrapper{padding:2px;}
 .theme-color-row input[type=color]::-webkit-color-swatch{border:none;border-radius:6px;}
 .theme-color-row input[type=color]::-moz-color-swatch{border:none;border-radius:6px;}
+.theme-depth-row{
+  display:flex;align-items:center;gap:14px;margin-top:16px;
+  padding:12px 14px;border-radius:13px;background:var(--bg);box-shadow:var(--n-inset-sm);
+  font-size:13px;font-weight:600;color:var(--ink-soft);
+}
+.theme-depth-row b{min-width:44px;text-align:right;color:var(--accent-ink);font-variant-numeric:tabular-nums;}
+.theme-depth-row input[type=range]{
+  flex:1;appearance:none;-webkit-appearance:none;height:8px;border-radius:100px;
+  background:var(--surface-hover);box-shadow:var(--n-inset-sm);outline:none;cursor:pointer;
+}
+.theme-depth-row input[type=range]::-webkit-slider-thumb{
+  appearance:none;-webkit-appearance:none;width:20px;height:20px;border-radius:50%;
+  background:var(--grad);box-shadow:var(--n-raise-sm), var(--glow-1);border:none;
+}
+.theme-depth-row input[type=range]::-moz-range-thumb{
+  width:20px;height:20px;border-radius:50%;background:var(--accent);
+  box-shadow:var(--n-raise-sm), var(--glow-1);border:none;
+}
 
 /* day groups (history view): spaced like review rows */
 .day-head{padding:12px 16px;border-radius:14px;margin:4px 14px 0;}

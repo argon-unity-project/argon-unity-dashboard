@@ -77,17 +77,21 @@ function resolveThemeColors(cfg){
   };
 }
 
-function _themeVars(c, dark){
-  const hi = dark ? 'rgba(255,255,255,.07)' : 'rgba(255,255,255,.8)';
-  const lo = dark ? 'rgba(0,0,0,.5)' : rgbaOf(darkenHex(c.bg,.35), .45);
+function _themeVars(c, dark, depth){
+  const d = Math.max(.3, Math.min(2, Number(depth) || 1));       // effect depth multiplier
+  const px = n => Math.max(1, Math.round(n * d)) + 'px';
+  const al = a => Math.min(1, a * d).toFixed(3);
+  const hi = `rgba(255,255,255,${al(dark ? .07 : .8)})`;
+  const lo = dark ? `rgba(0,0,0,${al(.5)})` : rgbaOf(darkenHex(c.bg,.35), al(.45));
+  const glow = c.glow || c.accent;                                // selected/active glow color
   return {
     '--accent': c.accent,
     '--accent-hover': lightenHex(c.accent,.12),
     '--accent-soft': rgbaOf(c.accent, dark ? .15 : .13),
     '--accent-ink': dark ? lightenHex(c.accent,.35) : darkenHex(c.accent,.22),
     '--grad': `linear-gradient(135deg,${lightenHex(c.accent,.12)} 0%,${c.accent} 100%)`,
-    '--glow-1': `0 5px 14px -5px ${rgbaOf(c.accent,.4)}`,
-    '--glow-2': `0 6px 18px -5px ${rgbaOf(c.accent,.5)}`,
+    '--glow-1': `0 5px 14px -5px ${rgbaOf(glow,.4)}`,
+    '--glow-2': `0 6px 18px -5px ${rgbaOf(glow,.5)}`,
     '--accent2': c.accent2,
     '--accent2-soft': rgbaOf(c.accent2,.13),
     '--accent2-ink': dark ? lightenHex(c.accent2,.35) : darkenHex(c.accent2,.22),
@@ -95,18 +99,19 @@ function _themeVars(c, dark){
     '--surface': c.bg,
     '--surface-alt': lightenHex(c.bg, dark ? .03 : .25),
     '--surface-hover': lightenHex(c.bg, dark ? .06 : .5),
-    '--n-raise': `-4px -4px 9px ${hi}, 4px 4px 10px ${lo}`,
-    '--n-raise-sm': `-2px -2px 5px ${hi}, 2px 2px 6px ${lo}`,
-    '--n-inset': `inset 3px 3px 6px ${lo}, inset -3px -3px 6px ${hi}`,
-    '--n-inset-sm': `inset 2px 2px 4px ${lo}, inset -2px -2px 4px ${hi}`
+    '--n-raise': `-${px(4)} -${px(4)} ${px(9)} ${hi}, ${px(4)} ${px(4)} ${px(10)} ${lo}`,
+    '--n-raise-sm': `-${px(2)} -${px(2)} ${px(5)} ${hi}, ${px(2)} ${px(2)} ${px(6)} ${lo}`,
+    '--n-inset': `inset ${px(3)} ${px(3)} ${px(6)} ${lo}, inset -${px(3)} -${px(3)} ${px(6)} ${hi}`,
+    '--n-inset-sm': `inset ${px(2)} ${px(2)} ${px(4)} ${lo}, inset -${px(2)} -${px(2)} ${px(4)} ${hi}`
   };
 }
 function _varsCss(vars){ return Object.entries(vars).map(([k,v])=>`${k}:${v};`).join(''); }
 
 function applyCustomTheme(cfg){
   const colors = resolveThemeColors(cfg);
-  const css = `:root{${_varsCss(_themeVars(colors.light,false))}}\n` +
-              `:root[data-theme="dark"]{${_varsCss(_themeVars(colors.dark,true))}}`;
+  const depth = cfg && cfg.depth;
+  const css = `:root{${_varsCss(_themeVars(colors.light,false,depth))}}\n` +
+              `:root[data-theme="dark"]{${_varsCss(_themeVars(colors.dark,true,depth))}}`;
   let el = document.getElementById('custom-theme-css');
   if(!el){
     el = document.createElement('style');

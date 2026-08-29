@@ -39,6 +39,11 @@ Views.theme = {
             ${this.modeBlock('light','Light mode')}
             ${this.modeBlock('dark','Dark mode')}
           </div>
+          <div class="theme-depth-row">
+            <span>Effect depth</span>
+            <input type="range" id="th-depth" min="0.4" max="1.6" step="0.05">
+            <b id="th-depth-val"></b>
+          </div>
           <div class="mini-note" style="margin-top:12px;">Changes preview live on this screen. They only go live for everyone after you press <b>Save theme</b>.</div>
         </div>
       </div>`;
@@ -53,7 +58,8 @@ Views.theme = {
     const fields = [
       ['accent','Primary accent'],
       ['accent2','Secondary accent'],
-      ['bg','Background']
+      ['bg','Background'],
+      ['glow','Selected glow']
     ];
     return `
       <div class="theme-mode-block">
@@ -96,13 +102,26 @@ Views.theme = {
         this.renderPresets();  // custom edits deselect preset cards
       });
     });
+    const depth = document.getElementById('th-depth');
+    depth.addEventListener('input', ()=>{
+      this.cfg.depth = parseFloat(depth.value);
+      document.getElementById('th-depth-val').textContent = Math.round(this.cfg.depth*100)+'%';
+      this.applyPreview();
+    });
   },
 
   syncPickers(){
     const colors = resolveThemeColors(this.cfg);
     document.querySelectorAll('#main input[type=color]').forEach(inp=>{
-      inp.value = colors[inp.dataset.mode][inp.dataset.key];
+      const m = colors[inp.dataset.mode];
+      inp.value = m[inp.dataset.key] || m.accent;   // glow defaults to accent
     });
+    const d = this.cfg.depth || 1;
+    const depth = document.getElementById('th-depth');
+    if(depth){
+      depth.value = d;
+      document.getElementById('th-depth-val').textContent = Math.round(d*100)+'%';
+    }
   },
 
   applyPreview(){ applyCustomTheme(this.cfg); },
