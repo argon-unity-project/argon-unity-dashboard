@@ -61,7 +61,8 @@ Views.theme = {
       ['bg','Background'],
       ['border','Panel border'],
       ['glow','Selected glow'],
-      ['hoverGlow','Hover glow']
+      ['hoverGlow','Hover glow'],
+      ['focusGlow','Input focus glow']
     ];
     return `
       <div class="theme-mode-block">
@@ -120,6 +121,7 @@ Views.theme = {
       const fallback = {
         glow: m.accent,
         hoverGlow: m.accent,
+        focusGlow: m.accent,
         border: dark ? lightenHex(m.bg,.13) : darkenHex(m.bg,.14)
       };
       inp.value = m[inp.dataset.key] || fallback[inp.dataset.key] || m.accent;

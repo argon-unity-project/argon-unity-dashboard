@@ -2246,6 +2246,45 @@ input:focus,select:focus,.field textarea:focus,.dp-input.open,.cs-trigger.open,.
 .dp-nav:hover,.modal-close:hover,.copy-btn:hover{box-shadow:var(--n-raise-sm), 0 0 12px -4px var(--hover-glow);}
 .actions-cell .icon-btn:hover,.log-actions .icon-btn:hover{box-shadow:var(--n-raise-sm), 0 0 12px -4px var(--hover-glow);}
 
+/* =====================================================================
+   FLAT ACCENT BUTTONS — solid accent style (like the header CTA)
+   applied to every primary/active control project-wide.
+   ===================================================================== */
+.btn-primary,.btn-square{background:var(--accent);border-radius:14px;box-shadow:0 4px 14px -6px var(--accent);}
+.btn-primary:hover,.btn-square:hover{background:var(--accent-hover);filter:none;transform:translateY(-1px);box-shadow:0 6px 18px -6px var(--accent);}
+.btn-primary:active,.btn-square:active{transform:translateY(1px) scale(.99);box-shadow:0 2px 8px -4px var(--accent);}
+.nav-item.active{background:var(--accent);box-shadow:0 4px 14px -6px var(--accent);}
+.seg button.active{background:var(--accent);color:#fff;box-shadow:0 3px 10px -5px var(--accent);}
+.page-btn.active{background:var(--accent);box-shadow:0 3px 10px -5px var(--accent);}
+.pick-card.active{background:var(--accent);box-shadow:0 4px 14px -6px var(--accent);}
+.dp-day.sel{background:var(--accent);box-shadow:0 3px 10px -5px var(--accent);}
+.chk input:checked + .chk-box{background:var(--accent);box-shadow:0 0 10px -2px var(--accent);}
+.modal-accent-bar,.login-accent{background:var(--accent);}
+.bar-fill{background:var(--accent);box-shadow:0 0 12px -2px var(--accent);}
+.theme-depth-row input[type=range]::-webkit-slider-thumb{background:var(--accent);}
+
+/* =====================================================================
+   INPUT FOCUS — themable outer glow on focused text boxes
+   ===================================================================== */
+:root{--focus-glow:var(--accent);}
+input:focus,select:focus,.field textarea:focus,.dp-input.open,.cs-trigger.open,.cs-trigger:focus-visible{
+  box-shadow:var(--n-inset-sm),
+    0 0 0 2px color-mix(in srgb, var(--focus-glow) 22%, transparent),
+    0 0 14px -4px var(--focus-glow) !important;
+}
+
+/* =====================================================================
+   LOGIN PAGE — follow the theme accent + fix autofill colors
+   ===================================================================== */
+.login-wrap::before{background:radial-gradient(circle, color-mix(in srgb, var(--accent) 15%, transparent) 0%, transparent 65%);}
+.login-card{box-shadow:var(--shadow-lg), 0 0 70px -20px color-mix(in srgb, var(--accent) 35%, transparent);}
+input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus{
+  -webkit-text-fill-color:var(--ink);
+  -webkit-box-shadow:0 0 0 1000px var(--surface-alt) inset;
+  caret-color:var(--ink);
+  transition:background-color 9999s ease-in-out 0s;
+}
+
 /* day groups (history view): spaced like review rows */
 .day-head{padding:12px 16px;border-radius:14px;margin:4px 14px 0;}
 .day-group:first-child .day-head{margin-top:8px;}

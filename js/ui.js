@@ -104,7 +104,8 @@ function _themeVars(c, dark, depth){
     '--n-inset': `inset ${px(3)} ${px(3)} ${px(6)} ${lo}, inset -${px(3)} -${px(3)} ${px(6)} ${hi}`,
     '--n-inset-sm': `inset ${px(2)} ${px(2)} ${px(4)} ${lo}, inset -${px(2)} -${px(2)} ${px(4)} ${hi}`,
     '--panel-border': c.border || (dark ? lightenHex(c.bg,.13) : darkenHex(c.bg,.14)),
-    '--hover-glow': c.hoverGlow || c.accent
+    '--hover-glow': c.hoverGlow || c.accent,
+    '--focus-glow': c.focusGlow || c.accent
   };
 }
 function _varsCss(vars){ return Object.entries(vars).map(([k,v])=>`${k}:${v};`).join(''); }
