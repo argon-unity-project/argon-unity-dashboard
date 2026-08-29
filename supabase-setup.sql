@@ -203,3 +203,31 @@ create policy log_delete on public.work_logs
 --       (the admin creates accounts directly with temporary passwords).
 --    3) Open index.html → "First-time setup" appears → create your admin.
 -- ---------------------------------------------------------------------------
+
+-- ---------------------------------------------------------------------------
+-- 5. APP SETTINGS (theme colors, managed from the Admin → Theme section)
+--    Run this block in the SQL editor if you set the project up before it
+--    existed — it is safe to re-run.
+-- ---------------------------------------------------------------------------
+create table if not exists public.app_settings (
+  key        text primary key,
+  value      jsonb not null,
+  updated_at timestamptz not null default now()
+);
+alter table public.app_settings enable row level security;
+
+drop policy if exists settings_select on public.app_settings;
+drop policy if exists settings_insert on public.app_settings;
+drop policy if exists settings_update on public.app_settings;
+drop policy if exists settings_delete on public.app_settings;
+
+-- Everyone (even the login page) may read settings; only admins may write.
+create policy settings_select on public.app_settings
+  for select to anon, authenticated using (true);
+create policy settings_insert on public.app_settings
+  for insert to authenticated with check (my_role() = 'admin');
+create policy settings_update on public.app_settings
+  for update to authenticated
+  using (my_role() = 'admin') with check (my_role() = 'admin');
+create policy settings_delete on public.app_settings
+  for delete to authenticated using (my_role() = 'admin');

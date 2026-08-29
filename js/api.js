@@ -221,3 +221,21 @@ async function apiDeleteLog(id){
   const { error } = await sb.from('work_logs').delete().eq('id', id);
   if(error) throw error;
 }
+
+// ---------- app settings (theme, etc.) ----------
+async function apiGetSetting(key){
+  requireSb();
+  const { data, error } = await sb.from('app_settings').select('value').eq('key', key).limit(1);
+  if(error) throw error;
+  return data && data.length ? data[0].value : null;
+}
+async function apiSaveSetting(key, value){
+  requireSb();
+  const { error } = await sb.from('app_settings').upsert({ key, value, updated_at: new Date().toISOString() });
+  if(error) throw error;
+}
+async function apiDeleteSetting(key){
+  requireSb();
+  const { error } = await sb.from('app_settings').delete().eq('key', key);
+  if(error) throw error;
+}

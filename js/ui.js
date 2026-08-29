@@ -32,6 +32,103 @@ function initTheme(){
   applyTheme(stored || (prefersDark ? 'dark' : 'light'), false);
   const btn = document.getElementById('btn-theme-toggle');
   if(btn) btn.addEventListener('click', toggleTheme);
+  initCustomTheme();
+}
+
+// ---------- custom theme colors (admin-managed, stored in Supabase) ----------
+const KEY_THEME_CFG = 'argon:themeCfg';
+const THEME_PRESETS = [
+  { id:'matte-black', name:'Matte Black',
+    light:{ accent:'#2A7FF5', accent2:'#0FA793', bg:'#E6EAF4' },
+    dark: { accent:'#42A5FF', accent2:'#2BD9C0', bg:'#1A1A1A' } },
+  { id:'navy-pink', name:'Navy Pink',
+    light:{ accent:'#F5317F', accent2:'#0FB5D6', bg:'#E6EAF4' },
+    dark: { accent:'#FF4FA0', accent2:'#29D8F5', bg:'#262B4B' } },
+  { id:'violet', name:'Violet',
+    light:{ accent:'#7C3AED', accent2:'#0891B2', bg:'#EDEAF6' },
+    dark: { accent:'#8B5CF6', accent2:'#22D3EE', bg:'#191622' } },
+  { id:'forest', name:'Forest',
+    light:{ accent:'#0E9F6E', accent2:'#D97706', bg:'#E9EFEA' },
+    dark: { accent:'#10B981', accent2:'#F59E0B', bg:'#151A17' } }
+];
+const DEFAULT_THEME_CFG = { preset:'matte-black' };
+
+function _hexRgb(hex){
+  const h = (hex || '#000000').replace('#','');
+  const f = h.length === 3 ? h.split('').map(c=>c+c).join('') : h;
+  return [parseInt(f.slice(0,2),16)||0, parseInt(f.slice(2,4),16)||0, parseInt(f.slice(4,6),16)||0];
+}
+function _mix(hex, target, amt){
+  const c = _hexRgb(hex);
+  const t = target === 'w' ? [255,255,255] : [0,0,0];
+  return '#' + c.map((v,i)=>Math.round(v + (t[i]-v)*amt).toString(16).padStart(2,'0')).join('');
+}
+function lightenHex(h,a){ return _mix(h,'w',a); }
+function darkenHex(h,a){ return _mix(h,'b',a); }
+function rgbaOf(hex,a){ const c=_hexRgb(hex); return `rgba(${c[0]},${c[1]},${c[2]},${a})`; }
+
+function resolveThemeColors(cfg){
+  cfg = cfg || DEFAULT_THEME_CFG;
+  const base = THEME_PRESETS[0];
+  const preset = THEME_PRESETS.find(p => p.id === cfg.preset) || base;
+  return {
+    light: Object.assign({}, base.light, preset.light, cfg.light || {}),
+    dark:  Object.assign({}, base.dark,  preset.dark,  cfg.dark  || {})
+  };
+}
+
+function _themeVars(c, dark){
+  const hi = dark ? 'rgba(255,255,255,.07)' : 'rgba(255,255,255,.8)';
+  const lo = dark ? 'rgba(0,0,0,.5)' : rgbaOf(darkenHex(c.bg,.35), .45);
+  return {
+    '--accent': c.accent,
+    '--accent-hover': lightenHex(c.accent,.12),
+    '--accent-soft': rgbaOf(c.accent, dark ? .15 : .13),
+    '--accent-ink': dark ? lightenHex(c.accent,.35) : darkenHex(c.accent,.22),
+    '--grad': `linear-gradient(135deg,${lightenHex(c.accent,.12)} 0%,${c.accent} 100%)`,
+    '--glow-1': `0 5px 14px -5px ${rgbaOf(c.accent,.4)}`,
+    '--glow-2': `0 6px 18px -5px ${rgbaOf(c.accent,.5)}`,
+    '--accent2': c.accent2,
+    '--accent2-soft': rgbaOf(c.accent2,.13),
+    '--accent2-ink': dark ? lightenHex(c.accent2,.35) : darkenHex(c.accent2,.22),
+    '--bg': c.bg,
+    '--surface': c.bg,
+    '--surface-alt': lightenHex(c.bg, dark ? .03 : .25),
+    '--surface-hover': lightenHex(c.bg, dark ? .06 : .5),
+    '--n-raise': `-4px -4px 9px ${hi}, 4px 4px 10px ${lo}`,
+    '--n-raise-sm': `-2px -2px 5px ${hi}, 2px 2px 6px ${lo}`,
+    '--n-inset': `inset 3px 3px 6px ${lo}, inset -3px -3px 6px ${hi}`,
+    '--n-inset-sm': `inset 2px 2px 4px ${lo}, inset -2px -2px 4px ${hi}`
+  };
+}
+function _varsCss(vars){ return Object.entries(vars).map(([k,v])=>`${k}:${v};`).join(''); }
+
+function applyCustomTheme(cfg){
+  const colors = resolveThemeColors(cfg);
+  const css = `:root{${_varsCss(_themeVars(colors.light,false))}}\n` +
+              `:root[data-theme="dark"]{${_varsCss(_themeVars(colors.dark,true))}}`;
+  let el = document.getElementById('custom-theme-css');
+  if(!el){
+    el = document.createElement('style');
+    el.id = 'custom-theme-css';
+    document.head.appendChild(el);
+  }
+  el.textContent = css;
+}
+
+function initCustomTheme(){
+  // instant apply from cache, then refresh from Supabase
+  let cached = null;
+  try{ cached = JSON.parse(localStorage.getItem(KEY_THEME_CFG) || 'null'); }catch(e){}
+  if(cached) applyCustomTheme(cached);
+  if(typeof apiGetSetting === 'function' && typeof sb !== 'undefined' && sb){
+    apiGetSetting('theme').then(cfg => {
+      if(cfg){
+        applyCustomTheme(cfg);
+        try{ localStorage.setItem(KEY_THEME_CFG, JSON.stringify(cfg)); }catch(e){}
+      }
+    }).catch(()=>{ /* table may not exist yet — default CSS applies */ });
+  }
 }
 
 // ---------- toasts ----------

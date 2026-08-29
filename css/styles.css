@@ -1840,10 +1840,10 @@ thead th{font-weight:600;}
   --shadow-lg:var(--n-raise), 0 24px 50px -20px rgba(90,100,140,.4);
 }
 :root[data-theme="dark"]{
-  --bg:#0E0E0E;
-  --surface:#0E0E0E;
-  --surface-alt:#161616;
-  --surface-hover:#1E1E1E;
+  --bg:#1A1A1A;
+  --surface:#1A1A1A;
+  --surface-alt:#212121;
+  --surface-hover:#282828;
   --border:rgba(255,255,255,.05);
   --border-strong:rgba(255,255,255,.09);
   --ink:#F2F2F2;
@@ -1864,10 +1864,10 @@ thead th{font-weight:600;}
   --success:#3DDBA4;
   --success-soft:rgba(61,219,164,.12);
   --grad:linear-gradient(135deg,#FF5CA8 0%,#FF2E7E 100%);
-  --n-raise:-7px -7px 14px rgba(255,255,255,.055), 7px 7px 16px rgba(0,0,0,.6);
-  --n-raise-sm:-4px -4px 8px rgba(255,255,255,.05), 4px 4px 10px rgba(0,0,0,.55);
-  --n-inset:inset 5px 5px 10px rgba(0,0,0,.55), inset -5px -5px 10px rgba(255,255,255,.05);
-  --n-inset-sm:inset 3px 3px 6px rgba(0,0,0,.5), inset -3px -3px 6px rgba(255,255,255,.045);
+  --n-raise:-7px -7px 14px rgba(255,255,255,.09), 7px 7px 16px rgba(0,0,0,.65);
+  --n-raise-sm:-4px -4px 8px rgba(255,255,255,.08), 4px 4px 10px rgba(0,0,0,.6);
+  --n-inset:inset 5px 5px 10px rgba(0,0,0,.6), inset -5px -5px 10px rgba(255,255,255,.08);
+  --n-inset-sm:inset 3px 3px 6px rgba(0,0,0,.55), inset -3px -3px 6px rgba(255,255,255,.07);
   --glow-1:0 6px 18px -6px rgba(255,79,160,.5);
   --glow-2:0 8px 24px -6px rgba(255,79,160,.6);
   --shadow-sm:var(--n-raise-sm);
@@ -2131,10 +2131,10 @@ input:focus,select:focus,.field textarea:focus,.dp-input.open,.cs-trigger.open,.
   --grad:linear-gradient(135deg,#54B4FF 0%,#2E7FF0 100%);
   --glow-1:0 5px 14px -5px rgba(66,165,255,.45);
   --glow-2:0 6px 18px -5px rgba(66,165,255,.55);
-  --n-raise:-4px -4px 8px rgba(255,255,255,.035), 4px 4px 10px rgba(0,0,0,.38);
-  --n-raise-sm:-2px -2px 5px rgba(255,255,255,.03), 2px 2px 6px rgba(0,0,0,.35);
-  --n-inset:inset 3px 3px 6px rgba(0,0,0,.35), inset -3px -3px 6px rgba(255,255,255,.032);
-  --n-inset-sm:inset 2px 2px 4px rgba(0,0,0,.32), inset -2px -2px 4px rgba(255,255,255,.028);
+  --n-raise:-4px -4px 8px rgba(255,255,255,.07), 4px 4px 10px rgba(0,0,0,.5);
+  --n-raise-sm:-2px -2px 5px rgba(255,255,255,.06), 2px 2px 6px rgba(0,0,0,.45);
+  --n-inset:inset 3px 3px 6px rgba(0,0,0,.45), inset -3px -3px 6px rgba(255,255,255,.06);
+  --n-inset-sm:inset 2px 2px 4px rgba(0,0,0,.42), inset -2px -2px 4px rgba(255,255,255,.055);
   --shadow-sm:var(--n-raise-sm);
   --shadow-md:var(--n-raise);
   --shadow-lg:var(--n-raise);
@@ -2153,3 +2153,55 @@ input:focus,select:focus,.field textarea:focus,.dp-input.open,.cs-trigger.open,.
 .lh-logo{filter:drop-shadow(0 8px 20px rgba(66,165,255,.4));}
 .btn-danger{box-shadow:var(--n-raise-sm), 0 5px 14px -5px rgba(225,29,72,.4);}
 .av-1{background:linear-gradient(135deg,#F472B6,#DB2777)!important;}
+
+/* =====================================================================
+   LAYOUT FIXES — breathing room for neumorph wells in list/grid views
+   ===================================================================== */
+/* review "Today" list: rows become spaced wells instead of flush strips */
+.panel-body.flush{padding:8px 0 12px;}
+.review-dev{border-bottom:none;padding:0 14px;}
+.review-dev + .review-dev{margin-top:4px;}
+.review-dev-head{margin:6px 0;padding:12px 16px;}
+.review-dev .log-entry{border-bottom:none;border-radius:12px;padding:12px 14px;}
+.review-dev .log-entry:hover{background:var(--surface-alt);}
+
+/* keep chips pinned right even when row wraps */
+.review-dev-head .rd-spacer{flex:1 1 40px;min-width:12px;}
+.review-dev-head .tasks-chip,
+.review-dev-head .missing-chip,
+.review-dev-head .offday-chip{margin-left:auto;flex-shrink:0;}
+.review-dev-head .rd-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:40%;}
+
+/* raised cards need gap so their shadows don't collide */
+.stat-grid{gap:16px;}
+.detail-grid{gap:14px;}
+
+/* =====================================================================
+   ADMIN THEME MANAGER
+   ===================================================================== */
+.theme-preset-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px;}
+.theme-preset{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:14px;cursor:pointer;font-family:var(--font-body);}
+.theme-preset .pick-name{font-size:13px;font-weight:700;color:var(--ink);}
+.theme-preset.active .pick-name{color:#fff;}
+.theme-dots{display:inline-flex;gap:4px;flex-shrink:0;}
+.theme-dots i{width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,255,255,.35);}
+.theme-custom-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+@media (max-width:700px){.theme-custom-grid{grid-template-columns:1fr;}}
+.theme-mode-block{display:flex;flex-direction:column;gap:10px;}
+.theme-color-row{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:10px 14px;border-radius:13px;background:var(--bg);box-shadow:var(--n-inset-sm);
+  font-size:13px;font-weight:600;color:var(--ink-soft);
+}
+.theme-color-row input[type=color]{
+  width:44px;height:30px;padding:2px;border:none;border-radius:9px;cursor:pointer;
+  background:var(--bg);box-shadow:var(--n-raise-sm);
+}
+.theme-color-row input[type=color]::-webkit-color-swatch-wrapper{padding:2px;}
+.theme-color-row input[type=color]::-webkit-color-swatch{border:none;border-radius:6px;}
+.theme-color-row input[type=color]::-moz-color-swatch{border:none;border-radius:6px;}
+
+/* day groups (history view): spaced like review rows */
+.day-head{padding:12px 16px;border-radius:14px;margin:4px 14px 0;}
+.day-group:first-child .day-head{margin-top:8px;}
+.day-body{margin:4px 14px 12px;}

@@ -41,7 +41,8 @@ const SECTIONS = [
   { key: 'team',     label: 'Team',     icon: 'users',     show: () => App.canReview },
   { key: 'worklog',  label: 'My Daily Work', icon: 'clipboard', show: () => !App.isAdmin },
   { key: 'review',   label: 'Review',   icon: 'check',     show: () => App.canReview },
-  { key: 'reports',  label: 'Reports',  icon: 'chart',     show: () => App.canReview }
+  { key: 'reports',  label: 'Reports',  icon: 'chart',     show: () => App.canReview },
+  { key: 'theme',    label: 'Theme',    icon: 'star',      show: () => App.isAdmin }
 ];
 
 function renderNav(){
