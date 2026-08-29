@@ -59,7 +59,9 @@ Views.theme = {
       ['accent','Primary accent'],
       ['accent2','Secondary accent'],
       ['bg','Background'],
-      ['glow','Selected glow']
+      ['border','Panel border'],
+      ['glow','Selected glow'],
+      ['hoverGlow','Hover glow']
     ];
     return `
       <div class="theme-mode-block">
@@ -114,7 +116,13 @@ Views.theme = {
     const colors = resolveThemeColors(this.cfg);
     document.querySelectorAll('#main input[type=color]').forEach(inp=>{
       const m = colors[inp.dataset.mode];
-      inp.value = m[inp.dataset.key] || m.accent;   // glow defaults to accent
+      const dark = inp.dataset.mode === 'dark';
+      const fallback = {
+        glow: m.accent,
+        hoverGlow: m.accent,
+        border: dark ? lightenHex(m.bg,.13) : darkenHex(m.bg,.14)
+      };
+      inp.value = m[inp.dataset.key] || fallback[inp.dataset.key] || m.accent;
     });
     const d = this.cfg.depth || 1;
     const depth = document.getElementById('th-depth');

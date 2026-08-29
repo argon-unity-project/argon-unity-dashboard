@@ -2219,6 +2219,33 @@ input:focus,select:focus,.field textarea:focus,.dp-input.open,.cs-trigger.open,.
   box-shadow:var(--n-raise-sm), var(--glow-1);border:none;
 }
 
+/* =====================================================================
+   FLAT OUTER PANELS — big grouped sections lose the emboss and get a
+   thin visible border instead; inner elements keep the neumorph depth.
+   --panel-border and --hover-glow are admin-themable.
+   ===================================================================== */
+:root{
+  --panel-border:rgba(35,41,70,.16);
+  --hover-glow:var(--accent);
+}
+:root[data-theme="dark"]{
+  --panel-border:rgba(255,255,255,.11);
+}
+.panel,.table-card,.toolbar,.sidebar{
+  box-shadow:none;
+  border:1px solid var(--panel-border);
+}
+/* floating surfaces: keep their drop shadow, add the thin border */
+.modal,.dp-pop,.cs-pop{border:1px solid var(--panel-border);}
+
+/* hover glow (themable) on interactive raised pieces */
+.stat-card:hover{border-color:var(--panel-border);box-shadow:var(--n-raise), 0 0 16px -6px var(--hover-glow);}
+.sidebar-user.clickable:hover{box-shadow:var(--n-raise-sm), 0 0 14px -5px var(--hover-glow);}
+.pick-card:hover{box-shadow:var(--n-raise-sm), 0 0 14px -5px var(--hover-glow);}
+.nav-item:hover{box-shadow:var(--n-raise-sm), 0 0 12px -5px var(--hover-glow);}
+.dp-nav:hover,.modal-close:hover,.copy-btn:hover{box-shadow:var(--n-raise-sm), 0 0 12px -4px var(--hover-glow);}
+.actions-cell .icon-btn:hover,.log-actions .icon-btn:hover{box-shadow:var(--n-raise-sm), 0 0 12px -4px var(--hover-glow);}
+
 /* day groups (history view): spaced like review rows */
 .day-head{padding:12px 16px;border-radius:14px;margin:4px 14px 0;}
 .day-group:first-child .day-head{margin-top:8px;}

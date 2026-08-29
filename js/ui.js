@@ -102,7 +102,9 @@ function _themeVars(c, dark, depth){
     '--n-raise': `-${px(7)} -${px(7)} ${px(16)} ${hi}, ${px(7)} ${px(7)} ${px(18)} ${lo}`,
     '--n-raise-sm': `-${px(2)} -${px(2)} ${px(5)} ${hi}, ${px(2)} ${px(2)} ${px(6)} ${lo}`,
     '--n-inset': `inset ${px(3)} ${px(3)} ${px(6)} ${lo}, inset -${px(3)} -${px(3)} ${px(6)} ${hi}`,
-    '--n-inset-sm': `inset ${px(2)} ${px(2)} ${px(4)} ${lo}, inset -${px(2)} -${px(2)} ${px(4)} ${hi}`
+    '--n-inset-sm': `inset ${px(2)} ${px(2)} ${px(4)} ${lo}, inset -${px(2)} -${px(2)} ${px(4)} ${hi}`,
+    '--panel-border': c.border || (dark ? lightenHex(c.bg,.13) : darkenHex(c.bg,.14)),
+    '--hover-glow': c.hoverGlow || c.accent
   };
 }
 function _varsCss(vars){ return Object.entries(vars).map(([k,v])=>`${k}:${v};`).join(''); }
