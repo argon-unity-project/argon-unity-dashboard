@@ -81,8 +81,8 @@ function _themeVars(c, dark, depth){
   const d = Math.max(.3, Math.min(2, Number(depth) || 1));       // effect depth multiplier
   const px = n => Math.max(1, Math.round(n * d)) + 'px';
   const al = a => Math.min(1, a * d).toFixed(3);
-  const hi = `rgba(255,255,255,${al(dark ? .07 : .8)})`;
-  const lo = dark ? `rgba(0,0,0,${al(.5)})` : rgbaOf(darkenHex(c.bg,.35), al(.45));
+  const hi = `rgba(255,255,255,${al(dark ? .085 : .85)})`;
+  const lo = dark ? `rgba(0,0,0,${al(.6)})` : rgbaOf(darkenHex(c.bg,.35), al(.5));
   const glow = c.glow || c.accent;                                // selected/active glow color
   return {
     '--accent': c.accent,
@@ -99,7 +99,7 @@ function _themeVars(c, dark, depth){
     '--surface': c.bg,
     '--surface-alt': lightenHex(c.bg, dark ? .03 : .25),
     '--surface-hover': lightenHex(c.bg, dark ? .06 : .5),
-    '--n-raise': `-${px(4)} -${px(4)} ${px(9)} ${hi}, ${px(4)} ${px(4)} ${px(10)} ${lo}`,
+    '--n-raise': `-${px(7)} -${px(7)} ${px(16)} ${hi}, ${px(7)} ${px(7)} ${px(18)} ${lo}`,
     '--n-raise-sm': `-${px(2)} -${px(2)} ${px(5)} ${hi}, ${px(2)} ${px(2)} ${px(6)} ${lo}`,
     '--n-inset': `inset ${px(3)} ${px(3)} ${px(6)} ${lo}, inset -${px(3)} -${px(3)} ${px(6)} ${hi}`,
     '--n-inset-sm': `inset ${px(2)} ${px(2)} ${px(4)} ${lo}, inset -${px(2)} -${px(2)} ${px(4)} ${hi}`

@@ -2112,7 +2112,7 @@ input:focus,select:focus,.field textarea:focus,.dp-input.open,.cs-trigger.open,.
   --grad:linear-gradient(135deg,#4FA9FF 0%,#2A7FF5 100%);
   --glow-1:0 5px 14px -5px rgba(42,127,245,.4);
   --glow-2:0 6px 18px -5px rgba(42,127,245,.5);
-  --n-raise:-4px -4px 9px rgba(255,255,255,.7), 4px 4px 10px rgba(163,177,208,.38);
+  --n-raise:-7px -7px 16px rgba(255,255,255,.85), 7px 7px 18px rgba(163,177,208,.5);
   --n-raise-sm:-2px -2px 5px rgba(255,255,255,.65), 2px 2px 6px rgba(163,177,208,.34);
   --n-inset:inset 3px 3px 6px rgba(163,177,208,.35), inset -3px -3px 6px rgba(255,255,255,.65);
   --n-inset-sm:inset 2px 2px 4px rgba(163,177,208,.32), inset -2px -2px 4px rgba(255,255,255,.6);
@@ -2131,7 +2131,7 @@ input:focus,select:focus,.field textarea:focus,.dp-input.open,.cs-trigger.open,.
   --grad:linear-gradient(135deg,#54B4FF 0%,#2E7FF0 100%);
   --glow-1:0 5px 14px -5px rgba(66,165,255,.45);
   --glow-2:0 6px 18px -5px rgba(66,165,255,.55);
-  --n-raise:-4px -4px 8px rgba(255,255,255,.07), 4px 4px 10px rgba(0,0,0,.5);
+  --n-raise:-7px -7px 16px rgba(255,255,255,.085), 7px 7px 18px rgba(0,0,0,.6);
   --n-raise-sm:-2px -2px 5px rgba(255,255,255,.06), 2px 2px 6px rgba(0,0,0,.45);
   --n-inset:inset 3px 3px 6px rgba(0,0,0,.45), inset -3px -3px 6px rgba(255,255,255,.06);
   --n-inset-sm:inset 2px 2px 4px rgba(0,0,0,.42), inset -2px -2px 4px rgba(255,255,255,.055);
