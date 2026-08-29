@@ -2231,7 +2231,7 @@ input:focus,select:focus,.field textarea:focus,.dp-input.open,.cs-trigger.open,.
 :root[data-theme="dark"]{
   --panel-border:rgba(255,255,255,.11);
 }
-.panel,.table-card,.toolbar,.sidebar{
+.panel,.table-card,.toolbar,.sidebar,.app-body .sidebar{
   box-shadow:none;
   border:1px solid var(--panel-border);
 }
