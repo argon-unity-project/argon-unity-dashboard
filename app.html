@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Argon Dashboard</title>
+<script>
+(function(){
+  try{
+    var stored = localStorage.getItem('argon:theme');
+    var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.setAttribute('data-theme', stored || (prefersDark ? 'dark' : 'light'));
+  }catch(e){}
+})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@6..144,100..1000&display=swap" rel="stylesheet" />
+<link rel="icon" type="image/png" href="assets/logo.png" />
+<link rel="stylesheet" href="css/styles.css" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="app-body">
+
+<div class="shell" id="shell" style="display:none;">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="assets/logo.png" alt="Argon" />
+      <span>Argon</span>
+    </div>
+    <nav id="nav" style="display:contents;"></nav>
+    <div class="sidebar-spacer"></div>
+    <button class="theme-switch" id="btn-theme-toggle" title="Toggle dark mode" aria-label="Toggle dark mode" style="margin:0 8px 10px;">
+      <span class="thumb" id="theme-thumb"></span>
+    </button>
+    <div class="sidebar-user" id="sidebar-user"></div>
+  </aside>
+
+  <main class="main" id="main">
+    <div class="loading-wrap"><div class="spinner"></div><span>Loading…</span></div>
+  </main>
+</div>
+
+<div class="loading-wrap" id="boot-loading" style="min-height:100vh;position:relative;z-index:1;">
+  <div class="spinner"></div><span>Checking your session…</span>
+</div>
+
+<div id="modal-root"></div>
+<div class="toast-stack" id="toast-stack"></div>
+
+<script src="js/config.js"></script>
+<script src="js/icons.js"></script>
+<script src="js/util.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/api.js"></script>
+<script src="js/views/overview.js"></script>
+<script src="js/views/projects.js"></script>
+<script src="js/views/team.js"></script>
+<script src="js/views/worklog.js"></script>
+<script src="js/views/review.js"></script>
+<script src="js/views/reports.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
