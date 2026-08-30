@@ -1,19 +1,19 @@
 // ============================================================
-// VIEW: Calendar — admin-managed holidays (stored in Supabase)
-// Click a working day to toggle it as a holiday, then Save.
-// Sundays + 1st/3rd Saturdays are automatic off days (locked).
+// VIEW: Calendar — admin-managed workdays (stored in Supabase)
+// Full-year grid: one row per month, one column per day.
+// Click ANY day to toggle working/off — weekends included.
 // ============================================================
 window.Views = window.Views || {};
 
 Views.calendar = {
-  y: null, m: null,        // viewed month
-  sel: null,               // Set of holiday ISO dates (working copy)
-  saved: null,             // Set as last saved
+  y: null,
+  hol: null,    // Set: extra holidays (working days marked off)
+  work: null,   // Set: weekly-off days forced to working
+  savedHol: null, savedWork: null,
 
   async render(main){
     if(!App.isAdmin){ main.innerHTML = ''; return; }
-    const now = new Date();
-    if(this.y === null){ this.y = now.getFullYear(); this.m = now.getMonth(); }
+    if(this.y === null) this.y = new Date().getFullYear();
     let stored = null;
     try{ stored = await apiGetSetting('holidays'); }
     catch(e){
@@ -21,108 +21,92 @@ Views.calendar = {
         <span><b>Settings table missing.</b> Run the "APP SETTINGS" block at the bottom of supabase-setup.sql in the Supabase SQL editor, then reload.</span></div></div></div>`;
       return;
     }
-    this.saved = new Set((stored && stored.dates) || []);
-    this.sel = new Set(this.saved);
+    this.savedHol  = new Set((stored && stored.dates) || []);
+    this.savedWork = new Set((stored && stored.work)  || []);
+    this.hol  = new Set(this.savedHol);
+    this.work = new Set(this.savedWork);
 
     main.innerHTML = `
       <div class="fill-page">
         <div class="main-head">
-          <div><h1>Holiday Calendar</h1><p class="sub">Click a working day to toggle it as a holiday. Sundays &amp; 1st/3rd Saturdays are always off.</p></div>
+          <div><h1>Work Calendar</h1><p class="sub">Click any day to toggle working / off. Sundays &amp; 1st/3rd Saturdays start as off — override them freely.</p></div>
           <div class="head-actions">
-            <button class="btn btn-secondary btn-sm" id="cal-today">Today</button>
-            <button class="icon-btn" id="cal-prev" title="Previous month">${ICONS.chevL}</button>
+            <button class="icon-btn" id="cal-prev" title="Previous year">${ICONS.chevL}</button>
             <b class="cal-label" id="cal-label"></b>
-            <button class="icon-btn" id="cal-next" title="Next month">${ICONS.chevR}</button>
-            <button class="btn btn-primary" id="cal-save">${ICONS.check}<span>Save</span></button>
+            <button class="icon-btn" id="cal-next" title="Next year">${ICONS.chevR}</button>
+            <button class="btn btn-primary" id="cal-save">${ICONS.check}<span>Saved</span></button>
           </div>
         </div>
-        <div class="cal-layout fill-flex">
-          <div class="panel col-flex">
-            <div class="cal-dow">${DOW_SHORT.map(d=>`<span>${d}</span>`).join('')}</div>
-            <div class="cal-grid" id="cal-grid"></div>
-          </div>
-          <div class="panel col-flex">
-            <div class="panel-head"><h2>Holidays · <span id="cal-list-year"></span></h2><span class="count-badge" id="cal-count">0</span></div>
-            <div class="panel-body theme-panel-body" id="cal-list"></div>
-            <div class="cal-legend">
-              <span><i class="lg-auto"></i>Weekly off</span>
-              <span><i class="lg-holiday"></i>Holiday</span>
-              <span><i class="lg-today"></i>Today</span>
-            </div>
+        <div class="panel col-flex fill-flex">
+          <div class="calyear-wrap" id="cal-grid"></div>
+          <div class="cal-legend">
+            <span><i class="lg-auto"></i>Weekly off</span>
+            <span><i class="lg-holiday"></i>Holiday (custom off)</span>
+            <span><i class="lg-work"></i>Weekend forced working</span>
+            <span><i class="lg-today"></i>Today</span>
+            <span id="cal-count" style="margin-left:auto;"></span>
           </div>
         </div>
       </div>`;
 
-    document.getElementById('cal-prev').addEventListener('click', ()=>this.shift(-1));
-    document.getElementById('cal-next').addEventListener('click', ()=>this.shift(1));
-    document.getElementById('cal-today').addEventListener('click', ()=>{
-      this.y = now.getFullYear(); this.m = now.getMonth(); this.draw();
-    });
+    document.getElementById('cal-prev').addEventListener('click', ()=>{ this.y--; this.draw(); });
+    document.getElementById('cal-next').addEventListener('click', ()=>{ this.y++; this.draw(); });
     document.getElementById('cal-save').addEventListener('click', ()=>this.save());
     this.draw();
   },
 
-  shift(n){
-    this.m += n;
-    if(this.m < 0){ this.m = 11; this.y--; }
-    if(this.m > 11){ this.m = 0; this.y++; }
+  draw(){
+    document.getElementById('cal-label').textContent = this.y;
+    const today = todayIso();
+    const DOW = ['S','M','T','W','T','F','S'];
+    let html = `<div class="calyear-grid">
+      <span class="cy-corner"></span>
+      ${Array.from({length:31},(_,i)=>`<span class="cy-daynum">${i+1}</span>`).join('')}`;
+    for(let m = 0; m < 12; m++){
+      const days = new Date(this.y, m + 1, 0).getDate();
+      html += `<span class="cy-mon">${MONTH_SHORT[m]}</span>`;
+      for(let dd = 1; dd <= 31; dd++){
+        if(dd > days){ html += '<span class="cy-cell empty"></span>'; continue; }
+        const date = new Date(this.y, m, dd);
+        const iso = isoOf(this.y, m, dd);
+        const auto = isAutoOffDay(date);
+        const off = auto ? !this.work.has(iso) : this.hol.has(iso);
+        const cls = ['cy-cell'];
+        if(off) cls.push('off');
+        if(off && !auto) cls.push('holiday');
+        if(auto && !off) cls.push('work-override');
+        if(iso === today) cls.push('today');
+        html += `<span class="${cls.join(' ')}" data-iso="${iso}" data-auto="${auto?1:0}" title="${DOW_SHORT[date.getDay()]}, ${dd} ${MONTH_SHORT[m]}">${DOW[date.getDay()]}</span>`;
+      }
+    }
+    html += '</div>';
+    const grid = document.getElementById('cal-grid');
+    grid.innerHTML = html;
+    grid.querySelectorAll('.cy-cell[data-iso]').forEach(c=>c.addEventListener('click', ()=>{
+      this.toggle(c.dataset.iso, c.dataset.auto === '1');
+    }));
+    this.refreshMeta();
+  },
+
+  toggle(iso, auto){
+    if(auto){
+      // weekly-off day: toggle forced-working override
+      this.work.has(iso) ? this.work.delete(iso) : this.work.add(iso);
+    }else{
+      // normal working day: toggle holiday
+      this.hol.has(iso) ? this.hol.delete(iso) : this.hol.add(iso);
+    }
     this.draw();
   },
 
-  draw(){
-    document.getElementById('cal-label').textContent = `${MONTH_FULL[this.m]} ${this.y}`;
-    const grid = document.getElementById('cal-grid');
-    const first = new Date(this.y, this.m, 1);
-    const start = new Date(first); start.setDate(1 - first.getDay());   // back to Sunday
-    const today = todayIso();
-    let html = '';
-    const d = new Date(start);
-    for(let i = 0; i < 42; i++){
-      const iso = isoOfDate(d);
-      const inMonth = d.getMonth() === this.m;
-      const auto = isAutoOffDay(d);
-      const holiday = this.sel.has(iso);
-      const cls = ['cal-cell'];
-      if(!inMonth) cls.push('other');
-      if(auto) cls.push('auto');
-      if(holiday) cls.push('holiday');
-      if(iso === today) cls.push('today');
-      html += `
-        <div class="${cls.join(' ')}" ${inMonth && !auto ? `data-iso="${iso}"` : ''}>
-          <span class="cal-num">${d.getDate()}</span>
-          ${auto ? '<span class="cal-tag">Off</span>' : holiday ? '<span class="cal-tag">Holiday</span>' : ''}
-        </div>`;
-      d.setDate(d.getDate() + 1);
-    }
-    grid.innerHTML = html;
-    grid.querySelectorAll('[data-iso]').forEach(c=>c.addEventListener('click', ()=>{
-      const iso = c.dataset.iso;
-      this.sel.has(iso) ? this.sel.delete(iso) : this.sel.add(iso);
-      this.draw();
-    }));
-    this.drawList();
-    this.markDirty();
-  },
-
-  drawList(){
-    document.getElementById('cal-list-year').textContent = this.y;
-    const dates = [...this.sel].filter(iso => iso.startsWith(String(this.y))).sort();
-    document.getElementById('cal-count').textContent = dates.length;
-    document.getElementById('cal-list').innerHTML = dates.length
-      ? dates.map(iso=>`
-          <div class="cal-list-row">
-            <span>${formatDateFriendly(iso)}</span>
-            <button class="icon-btn danger" data-del="${iso}" title="Remove">${ICONS.x}</button>
-          </div>`).join('')
-      : `<div class="mini-note" style="padding:8px 4px;">No holidays marked for ${this.y} yet. Click a date on the calendar to add one.</div>`;
-    document.querySelectorAll('#cal-list [data-del]').forEach(b=>b.addEventListener('click', ()=>{
-      this.sel.delete(b.dataset.del);
-      this.draw();
-    }));
-  },
-
-  markDirty(){
-    const dirty = this.sel.size !== this.saved.size || [...this.sel].some(x=>!this.saved.has(x));
+  refreshMeta(){
+    const holYear = [...this.hol].filter(i=>i.startsWith(String(this.y))).length;
+    const workYear = [...this.work].filter(i=>i.startsWith(String(this.y))).length;
+    document.getElementById('cal-count').textContent =
+      `${this.y}: ${holYear} holiday${holYear===1?'':'s'} · ${workYear} weekend${workYear===1?'':'s'} working`;
+    const dirty =
+      this.hol.size !== this.savedHol.size || [...this.hol].some(x=>!this.savedHol.has(x)) ||
+      this.work.size !== this.savedWork.size || [...this.work].some(x=>!this.savedWork.has(x));
     const btn = document.getElementById('cal-save');
     if(btn) btn.querySelector('span').textContent = dirty ? 'Save changes' : 'Saved';
   },
@@ -131,15 +115,17 @@ Views.calendar = {
     const btn = document.getElementById('cal-save');
     btn.disabled = true;
     try{
-      const dates = [...this.sel].sort();
-      await apiSaveSetting('holidays', { dates });
-      this.saved = new Set(dates);
-      setCustomHolidays(dates);                 // apply everywhere immediately
-      this.markDirty();
-      toast('success', ICONS.check, 'Holidays saved for the whole team.');
+      const dates = [...this.hol].sort();
+      const work = [...this.work].sort();
+      await apiSaveSetting('holidays', { dates, work });
+      this.savedHol = new Set(dates);
+      this.savedWork = new Set(work);
+      setCustomHolidays(dates, work);            // apply everywhere immediately
+      this.refreshMeta();
+      toast('success', ICONS.check, 'Work calendar saved for the whole team.');
       updateReviewFlag();
     }catch(err){
-      toast('danger', ICONS.warn, err.message || 'Could not save holidays.');
+      toast('danger', ICONS.warn, err.message || 'Could not save the calendar.');
     }finally{
       btn.disabled = false;
     }

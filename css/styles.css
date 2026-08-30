@@ -2394,48 +2394,45 @@ tbody tr:nth-child(even):hover{background:var(--surface-alt);}   /* keep zebra *
 /* =====================================================================
    HOLIDAY CALENDAR (admin)
    ===================================================================== */
-.cal-layout{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:16px;min-height:0;}
-.cal-layout .panel{min-height:0;}
-.cal-label{min-width:150px;text-align:center;font-size:14px;font-weight:700;color:var(--ink);}
-.cal-dow{
-  display:grid;grid-template-columns:repeat(7,1fr);gap:8px;padding:14px 16px 4px;
-  font-size:10.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;
-  color:var(--ink-faint);text-align:center;flex:0 0 auto;
+.cal-label{min-width:64px;text-align:center;font-size:14px;font-weight:700;color:var(--ink);}
+.calyear-wrap{flex:1 1 auto;min-height:0;display:flex;padding:12px 16px 8px;}
+.calyear-grid{
+  flex:1;display:grid;min-height:0;min-width:0;
+  grid-template-columns:44px repeat(31,minmax(0,1fr));
+  grid-template-rows:20px repeat(12,minmax(0,1fr));
+  gap:3px;
 }
-.cal-grid{
-  display:grid;grid-template-columns:repeat(7,1fr);grid-auto-rows:1fr;gap:8px;
-  padding:8px 16px 16px;flex:1 1 auto;min-height:0;
+.cy-corner{}
+.cy-daynum{
+  font-size:9.5px;font-weight:700;color:var(--ink-faint);
+  display:flex;align-items:center;justify-content:center;
 }
-.cal-cell{
-  border-radius:12px;border:1px solid var(--panel-border);background:var(--bg);
-  display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;
-  padding:8px 10px;min-height:0;cursor:pointer;user-select:none;
-  font-size:13px;font-weight:600;color:var(--ink-soft);
-  transition:color .12s ease, box-shadow .12s ease;
+.cy-mon{
+  font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--ink-soft);display:flex;align-items:center;
 }
-.cal-cell:hover .cal-num{color:var(--hover-glow);}
-.cal-cell:active{box-shadow:var(--n-inset-sm);}
-.cal-cell.other{opacity:.25;pointer-events:none;border-style:dashed;}
-.cal-cell.auto{box-shadow:var(--n-inset-sm);border:none;pointer-events:none;color:var(--ink-faint);}
-.cal-cell.holiday{box-shadow:var(--n-inset-sm);border:none;}
-.cal-cell.holiday .cal-num,.cal-cell.holiday .cal-tag{color:var(--select-color);}
-.cal-cell.today{border:1px solid var(--accent);}
-.cal-cell.today.auto,.cal-cell.today.holiday{border:1px solid var(--accent);}
-.cal-num{font-size:14px;font-weight:700;}
-.cal-tag{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-faint);}
-.cal-list-row{
-  display:flex;align-items:center;justify-content:space-between;gap:8px;
-  padding:7px 8px 7px 13px;border-radius:11px;box-shadow:var(--n-inset-sm);
-  margin-bottom:8px;font-size:12.5px;font-weight:600;color:var(--ink-soft);
+.cy-cell{
+  border-radius:7px;border:1px solid var(--panel-border);background:var(--bg);
+  display:flex;align-items:center;justify-content:center;min-width:0;min-height:0;
+  font-size:9.5px;font-weight:700;color:var(--ink-faint);
+  cursor:pointer;user-select:none;transition:color .1s ease;
 }
+.cy-cell:hover{color:var(--hover-glow);}
+.cy-cell.empty{visibility:hidden;pointer-events:none;}
+.cy-cell.off{box-shadow:var(--n-inset-sm);border-color:transparent;}
+.cy-cell.holiday{color:var(--select-color);}
+.cy-cell.work-override{color:var(--success);border-color:color-mix(in srgb, var(--success) 40%, transparent);}
+.cy-cell.today{border:1px solid var(--accent);color:var(--accent-ink);}
 .cal-legend{
-  display:flex;gap:14px;flex-wrap:wrap;padding:12px 16px;border-top:1px solid var(--panel-border);
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:10px 16px 14px;
+  border-top:1px solid var(--panel-border);
   font-size:11.5px;font-weight:600;color:var(--ink-faint);flex:0 0 auto;
 }
 .cal-legend span{display:inline-flex;align-items:center;gap:6px;}
 .cal-legend i{width:12px;height:12px;border-radius:4px;display:inline-block;}
 .cal-legend .lg-auto{background:var(--bg);box-shadow:var(--n-inset-sm);}
 .cal-legend .lg-holiday{background:var(--select-color);opacity:.8;}
+.cal-legend .lg-work{background:var(--bg);border:1px solid var(--success);}
 .cal-legend .lg-today{background:var(--bg);border:1px solid var(--accent);}
 
 /* day groups (history view): spaced like review rows */

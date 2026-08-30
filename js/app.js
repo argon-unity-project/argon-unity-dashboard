@@ -95,7 +95,7 @@ async function refreshCore(){
   // admin-managed holidays feed isOffDay() everywhere
   try{
     const h = await apiGetSetting('holidays');
-    if(h && h.dates) setCustomHolidays(h.dates);
+    if(h) setCustomHolidays(h.dates, h.work);
   }catch(e){ /* table may not exist yet */ }
 }
 

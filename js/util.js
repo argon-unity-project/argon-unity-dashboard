@@ -29,14 +29,20 @@ function isAutoOffDay(date){
   }
   return false;
 }
-// Admin-managed holidays (loaded from Supabase app_settings at boot)
+// Admin-managed calendar (loaded from Supabase app_settings at boot):
+// CUSTOM_HOLIDAYS = extra off days; CUSTOM_WORKDAYS = weekly-off days forced to working
 const CUSTOM_HOLIDAYS = new Set();
-function setCustomHolidays(dates){
+const CUSTOM_WORKDAYS = new Set();
+function setCustomHolidays(dates, work){
   CUSTOM_HOLIDAYS.clear();
+  CUSTOM_WORKDAYS.clear();
   (dates || []).forEach(d => CUSTOM_HOLIDAYS.add(String(d).slice(0,10)));
+  (work  || []).forEach(d => CUSTOM_WORKDAYS.add(String(d).slice(0,10)));
 }
 function isOffDay(date){
-  return isAutoOffDay(date) || CUSTOM_HOLIDAYS.has(isoOfDate(date));
+  const iso = isoOfDate(date);
+  if(CUSTOM_WORKDAYS.has(iso)) return false;
+  return isAutoOffDay(date) || CUSTOM_HOLIDAYS.has(iso);
 }
 function parseDateOnly(str){
   if(!str) return null;
