@@ -2179,31 +2179,34 @@ input:focus,select:focus,.field textarea:focus,.dp-input.open,.cs-trigger.open,.
 /* =====================================================================
    ADMIN THEME MANAGER
    ===================================================================== */
-.theme-preset-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px;}
-.theme-preset{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:14px;cursor:pointer;font-family:var(--font-body);}
-.theme-preset .pick-name{font-size:13px;font-weight:700;color:var(--ink);}
-.theme-preset.active .pick-name{color:#fff;}
+.theme-layout{display:grid;grid-template-columns:240px minmax(0,1fr);gap:16px;min-height:0;}
+.theme-layout .panel{min-height:0;}
+.theme-panel-body{flex:1 1 auto;min-height:0;overflow-y:auto;}
+.theme-preset-grid{display:grid;grid-template-columns:1fr;gap:10px;}
+.theme-preset{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:13px;cursor:pointer;font-family:var(--font-body);}
+.theme-preset .pick-name{font-size:12.5px;font-weight:700;color:var(--ink);}
 .theme-dots{display:inline-flex;gap:4px;flex-shrink:0;}
-.theme-dots i{width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,255,255,.35);}
-.theme-custom-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.theme-dots i{width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,255,255,.35);}
+.theme-custom-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
 @media (max-width:700px){.theme-custom-grid{grid-template-columns:1fr;}}
-.theme-mode-block{display:flex;flex-direction:column;gap:10px;}
+.theme-mode-block{display:flex;flex-direction:column;gap:7px;}
+.theme-mode-block .divider-label{margin:0 0 2px;}
 .theme-color-row{
-  display:flex;align-items:center;justify-content:space-between;gap:12px;
-  padding:10px 14px;border-radius:13px;background:var(--bg);box-shadow:var(--n-inset-sm);
-  font-size:13px;font-weight:600;color:var(--ink-soft);
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:6px 12px;border-radius:11px;background:var(--bg);box-shadow:var(--n-inset-sm);
+  font-size:12.5px;font-weight:600;color:var(--ink-soft);
 }
 .theme-color-row input[type=color]{
-  width:44px;height:30px;padding:2px;border:none;border-radius:9px;cursor:pointer;
+  width:38px;height:26px;padding:2px;border:none;border-radius:8px;cursor:pointer;
   background:var(--bg);box-shadow:var(--n-raise-sm);
 }
 .theme-color-row input[type=color]::-webkit-color-swatch-wrapper{padding:2px;}
 .theme-color-row input[type=color]::-webkit-color-swatch{border:none;border-radius:6px;}
 .theme-color-row input[type=color]::-moz-color-swatch{border:none;border-radius:6px;}
 .theme-depth-row{
-  display:flex;align-items:center;gap:14px;margin-top:16px;
-  padding:12px 14px;border-radius:13px;background:var(--bg);box-shadow:var(--n-inset-sm);
-  font-size:13px;font-weight:600;color:var(--ink-soft);
+  display:flex;align-items:center;gap:14px;margin-top:12px;
+  padding:8px 12px;border-radius:11px;background:var(--bg);box-shadow:var(--n-inset-sm);
+  font-size:12.5px;font-weight:600;color:var(--ink-soft);
 }
 .theme-depth-row b{min-width:44px;text-align:right;color:var(--accent-ink);font-variant-numeric:tabular-nums;}
 .theme-depth-row input[type=range]{
@@ -2328,6 +2331,17 @@ input:focus,select:focus,.field textarea:focus,.dp-input.open,.cs-trigger.open,.
   box-shadow:var(--n-inset-sm),
     0 0 0 2px color-mix(in srgb, var(--focus-glow) 45%, transparent) !important;
 }
+
+/* ---- non-clickable elements: no hover/click effects ---- */
+tbody tr:hover{background:transparent;}
+tbody tr:nth-child(even):hover{background:var(--surface-alt);}   /* keep zebra */
+.stat-card:hover{transform:none;box-shadow:none;border:1px solid var(--panel-border);}
+.log-entry:hover,.review-dev .log-entry:hover{background:transparent;}
+.detail-card:hover{transform:none;box-shadow:var(--n-inset-sm);border:none;}
+.day-total:hover,.tasks-chip:hover,.missing-chip:hover,.offday-chip:hover,
+.role-badge:hover,.count-badge:hover,.hero-count:hover,.workdays-chip:hover,
+.proj-status:hover,.status-inline:hover,.approve-chip:hover,.id-badge:hover{filter:none;transform:none;}
+.sidebar-user:not(.clickable):hover{box-shadow:var(--n-raise-sm);}
 
 /* day groups (history view): spaced like review rows */
 .day-head{padding:12px 16px;border-radius:14px;margin:4px 14px 0;}

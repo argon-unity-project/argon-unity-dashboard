@@ -21,30 +21,34 @@ Views.theme = {
     this.cfg = JSON.parse(JSON.stringify(this.saved));
 
     main.innerHTML = `
-      <div class="main-head">
-        <div><h1>Theme</h1><p class="sub">Site colors for every user — no code changes needed.</p></div>
-        <div class="head-actions">
-          <button class="btn btn-secondary" id="th-reset">Reset to default</button>
-          <button class="btn btn-primary" id="th-save">${ICONS.check}Save theme</button>
+      <div class="fill-page">
+        <div class="main-head">
+          <div><h1>Theme</h1><p class="sub">Site colors for every user — no code changes needed.</p></div>
+          <div class="head-actions">
+            <button class="btn btn-secondary" id="th-reset">Reset to default</button>
+            <button class="btn btn-primary" id="th-save">${ICONS.check}Save theme</button>
+          </div>
         </div>
-      </div>
-      <div class="panel" style="margin-bottom:16px;">
-        <div class="panel-head"><h2>Presets</h2></div>
-        <div class="panel-body"><div class="theme-preset-grid" id="th-presets"></div></div>
-      </div>
-      <div class="panel">
-        <div class="panel-head"><h2>Custom colors</h2></div>
-        <div class="panel-body">
-          <div class="theme-custom-grid">
-            ${this.modeBlock('light','Light mode')}
-            ${this.modeBlock('dark','Dark mode')}
+        <div class="theme-layout fill-flex">
+          <div class="panel col-flex">
+            <div class="panel-head"><h2>Presets</h2></div>
+            <div class="panel-body theme-panel-body"><div class="theme-preset-grid" id="th-presets"></div></div>
           </div>
-          <div class="theme-depth-row">
-            <span>Effect depth</span>
-            <input type="range" id="th-depth" min="0.4" max="1.6" step="0.05">
-            <b id="th-depth-val"></b>
+          <div class="panel col-flex">
+            <div class="panel-head"><h2>Custom colors</h2></div>
+            <div class="panel-body theme-panel-body">
+              <div class="theme-custom-grid">
+                ${this.modeBlock('light','Light mode')}
+                ${this.modeBlock('dark','Dark mode')}
+              </div>
+              <div class="theme-depth-row">
+                <span>Effect depth</span>
+                <input type="range" id="th-depth" min="0.4" max="1.6" step="0.05">
+                <b id="th-depth-val"></b>
+              </div>
+              <div class="mini-note" style="margin-top:8px;">Changes preview live. They go live for everyone after <b>Save theme</b>.</div>
+            </div>
           </div>
-          <div class="mini-note" style="margin-top:12px;">Changes preview live on this screen. They only go live for everyone after you press <b>Save theme</b>.</div>
         </div>
       </div>`;
 
