@@ -2285,6 +2285,50 @@ input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus
   transition:background-color 9999s ease-in-out 0s;
 }
 
+/* =====================================================================
+   CALM INTERACTIONS — no glows.
+   Hover: recolor text/icon only. Selection: pressed-in (inset) with
+   text/icon in the selection color. Focus: inset + thin ring.
+   ===================================================================== */
+:root{--select-color:var(--accent);}
+
+/* ---- hover: color change only ---- */
+.nav-item:hover{background:var(--bg);color:var(--hover-glow);transform:none;box-shadow:var(--n-raise-sm);}
+.nav-item:hover svg{color:var(--hover-glow);}
+.btn-secondary:hover{transform:none;box-shadow:var(--n-raise-sm);color:var(--hover-glow);}
+.btn-ghost:hover{color:var(--hover-glow);background:transparent;}
+.copy-btn:hover,.dp-nav:hover,.modal-close:hover{box-shadow:var(--n-raise-sm);color:var(--hover-glow);}
+.actions-cell .icon-btn:hover,.log-actions .icon-btn:hover{box-shadow:var(--n-raise-sm);filter:brightness(1.25);}
+.icon-btn:hover{border-color:transparent;}
+.stat-card:hover{transform:none;box-shadow:none;border:1px solid var(--hover-glow);}
+.sidebar-user.clickable:hover{box-shadow:var(--n-raise-sm);}
+.pick-card:hover{box-shadow:var(--n-raise-sm);}
+.pick-card:hover .pick-name{color:var(--hover-glow);}
+.btn-primary:hover,.btn-square:hover{transform:none;box-shadow:0 4px 14px -6px var(--accent);}
+.login-link:hover{background:transparent;color:var(--hover-glow);}
+
+/* ---- selection: pressed-in + selection-colored text/icon ---- */
+.nav-item.active{background:var(--bg);color:var(--select-color);box-shadow:var(--n-inset-sm);}
+.nav-item.active svg{color:var(--select-color);}
+.nav-item.active:hover{color:var(--select-color);box-shadow:var(--n-inset-sm);}
+.nav-flag{background:var(--select-color);color:#fff;}
+.seg button.active{background:var(--bg);color:var(--select-color);box-shadow:var(--n-inset-sm);}
+.page-btn.active{background:var(--bg);color:var(--select-color);border:none;box-shadow:var(--n-inset-sm);}
+.pick-card.active{background:var(--bg);box-shadow:var(--n-inset-sm);}
+.pick-card.active .pick-name,.pick-card.active .pick-meta{color:var(--select-color);}
+.dp-day.sel{background:var(--bg);color:var(--select-color);font-weight:700;box-shadow:var(--n-inset-sm);}
+.theme-preset.active{background:var(--bg);box-shadow:var(--n-inset-sm);}
+.theme-preset.active .pick-name{color:var(--select-color);}
+.chk input:checked + .chk-box{background:var(--select-color);box-shadow:var(--n-inset-sm);}
+.bar-fill{box-shadow:none;}
+.theme-depth-row input[type=range]::-webkit-slider-thumb{box-shadow:var(--n-raise-sm);}
+
+/* ---- focus: inset + thin ring, no outer glow ---- */
+input:focus,select:focus,.field textarea:focus,.dp-input.open,.cs-trigger.open,.cs-trigger:focus-visible{
+  box-shadow:var(--n-inset-sm),
+    0 0 0 2px color-mix(in srgb, var(--focus-glow) 45%, transparent) !important;
+}
+
 /* day groups (history view): spaced like review rows */
 .day-head{padding:12px 16px;border-radius:14px;margin:4px 14px 0;}
 .day-group:first-child .day-head{margin-top:8px;}

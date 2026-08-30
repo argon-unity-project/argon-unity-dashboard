@@ -60,9 +60,9 @@ Views.theme = {
       ['accent2','Secondary accent'],
       ['bg','Background'],
       ['border','Panel border'],
-      ['glow','Selected glow'],
-      ['hoverGlow','Hover glow'],
-      ['focusGlow','Input focus glow']
+      ['glow','Selection color'],
+      ['hoverGlow','Hover color'],
+      ['focusGlow','Input focus ring']
     ];
     return `
       <div class="theme-mode-block">

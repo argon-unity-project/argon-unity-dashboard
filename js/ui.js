@@ -105,7 +105,8 @@ function _themeVars(c, dark, depth){
     '--n-inset-sm': `inset ${px(2)} ${px(2)} ${px(4)} ${lo}, inset -${px(2)} -${px(2)} ${px(4)} ${hi}`,
     '--panel-border': c.border || (dark ? lightenHex(c.bg,.13) : darkenHex(c.bg,.14)),
     '--hover-glow': c.hoverGlow || c.accent,
-    '--focus-glow': c.focusGlow || c.accent
+    '--focus-glow': c.focusGlow || c.accent,
+    '--select-color': c.glow || c.accent
   };
 }
 function _varsCss(vars){ return Object.entries(vars).map(([k,v])=>`${k}:${v};`).join(''); }
