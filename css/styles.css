@@ -2420,9 +2420,14 @@ tbody tr:nth-child(even):hover{background:var(--surface-alt);}   /* keep zebra *
 .cy-cell:hover{color:var(--hover-glow);}
 .cy-cell.empty{visibility:hidden;pointer-events:none;}
 .cy-cell.off{box-shadow:var(--n-inset-sm);border-color:transparent;}
-.cy-cell.holiday{color:var(--select-color);}
+.cy-cell.holiday{color:var(--danger);font-weight:800;}
 .cy-cell.work-override{color:var(--success);border-color:color-mix(in srgb, var(--success) 40%, transparent);}
 .cy-cell.today{border:1px solid var(--accent);color:var(--accent-ink);}
+/* excel-style header highlight while hovering a cell */
+.cy-daynum.hl,.cy-mon.hl{
+  color:var(--accent-ink);background:var(--surface-hover);border-radius:6px;
+}
+.cy-mon.hl{padding-left:6px;}
 .cal-legend{
   display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:10px 16px 14px;
   border-top:1px solid var(--panel-border);
@@ -2431,7 +2436,7 @@ tbody tr:nth-child(even):hover{background:var(--surface-alt);}   /* keep zebra *
 .cal-legend span{display:inline-flex;align-items:center;gap:6px;}
 .cal-legend i{width:12px;height:12px;border-radius:4px;display:inline-block;}
 .cal-legend .lg-auto{background:var(--bg);box-shadow:var(--n-inset-sm);}
-.cal-legend .lg-holiday{background:var(--select-color);opacity:.8;}
+.cal-legend .lg-holiday{background:var(--danger);opacity:.8;}
 .cal-legend .lg-work{background:var(--bg);border:1px solid var(--success);}
 .cal-legend .lg-today{background:var(--bg);border:1px solid var(--accent);}
 
