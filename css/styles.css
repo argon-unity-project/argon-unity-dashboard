@@ -2406,28 +2406,36 @@ tbody tr:nth-child(even):hover{background:var(--surface-alt);}   /* keep zebra *
 .cy-daynum{
   font-size:9.5px;font-weight:700;color:var(--ink-faint);
   display:flex;align-items:center;justify-content:center;
+  border-radius:6px;transition:color .1s ease, background .1s ease;
 }
 .cy-mon{
   font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
-  color:var(--ink-soft);display:flex;align-items:center;
+  color:var(--ink-soft);display:flex;align-items:center;gap:6px;padding-left:2px;
+  border-radius:6px;transition:color .1s ease, background .1s ease;
 }
+/* current month: accent bar + accent label */
+.cy-mon.cur{color:var(--accent-ink);}
+.cy-mon.cur::before{content:'';width:3px;height:60%;border-radius:2px;background:var(--accent);}
 .cy-cell{
-  border-radius:7px;border:1px solid var(--panel-border);background:var(--bg);
+  border-radius:6px;border:none;background:var(--surface-alt);
   display:flex;align-items:center;justify-content:center;min-width:0;min-height:0;
   font-size:9.5px;font-weight:700;color:var(--ink-faint);
-  cursor:pointer;user-select:none;transition:color .1s ease;
+  cursor:pointer;user-select:none;
+  transition:color .1s ease, background .1s ease, box-shadow .1s ease;
 }
-.cy-cell:hover{color:var(--hover-glow);}
+.cy-cell.cur-row{background:color-mix(in srgb, var(--accent) 8%, var(--surface-alt));}
 .cy-cell.empty{visibility:hidden;pointer-events:none;}
-.cy-cell.off{box-shadow:var(--n-inset-sm);border-color:transparent;}
-.cy-cell.holiday{color:var(--danger);font-weight:800;}
-.cy-cell.work-override{color:var(--success);border-color:color-mix(in srgb, var(--success) 40%, transparent);}
-.cy-cell.today{border:1px solid var(--accent);color:var(--accent-ink);}
-/* excel-style header highlight while hovering a cell */
-.cy-daynum.hl,.cy-mon.hl{
-  color:var(--accent-ink);background:var(--surface-hover);border-radius:6px;
-}
-.cy-mon.hl{padding-left:6px;}
+/* states */
+.cy-cell.off{background:var(--bg);box-shadow:var(--n-inset-sm);}
+.cy-cell.holiday{color:var(--danger);font-weight:800;background:color-mix(in srgb, var(--danger) 12%, var(--bg));}
+.cy-cell.work-override{color:var(--success);background:color-mix(in srgb, var(--success) 12%, var(--surface-alt));}
+.cy-cell.today{box-shadow:inset 0 0 0 1.5px var(--accent);color:var(--accent-ink);font-weight:800;}
+/* excel-style cross highlight */
+.cy-cell.hl-line{background:var(--surface-hover);}
+.cy-cell.off.hl-line{background:var(--bg);}
+.cy-cell.holiday.hl-line{background:color-mix(in srgb, var(--danger) 18%, var(--bg));}
+.cy-cell:hover{color:var(--accent-ink);box-shadow:var(--n-raise-sm);position:relative;z-index:1;}
+.cy-daynum.hl,.cy-mon.hl{color:var(--accent-ink);}
 .cal-legend{
   display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:10px 16px 14px;
   border-top:1px solid var(--panel-border);

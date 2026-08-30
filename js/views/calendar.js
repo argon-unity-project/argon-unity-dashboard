@@ -59,19 +59,23 @@ Views.calendar = {
     document.getElementById('cal-label').textContent = this.y;
     const today = todayIso();
     const DOW = ['S','M','T','W','T','F','S'];
+    const nowD = new Date();
+    const curM = this.y === nowD.getFullYear() ? nowD.getMonth() : -1;
     let html = `<div class="calyear-grid">
       <span class="cy-corner"></span>
       ${Array.from({length:31},(_,i)=>`<span class="cy-daynum" data-d="${i+1}">${i+1}</span>`).join('')}`;
     for(let m = 0; m < 12; m++){
       const days = new Date(this.y, m + 1, 0).getDate();
-      html += `<span class="cy-mon" data-m="${m}">${MONTH_SHORT[m]}</span>`;
+      const cur = m === curM;
+      html += `<span class="cy-mon${cur?' cur':''}" data-m="${m}">${MONTH_SHORT[m]}</span>`;
       for(let dd = 1; dd <= 31; dd++){
-        if(dd > days){ html += '<span class="cy-cell empty"></span>'; continue; }
+        if(dd > days){ html += `<span class="cy-cell empty${cur?' cur-row':''}"></span>`; continue; }
         const date = new Date(this.y, m, dd);
         const iso = isoOf(this.y, m, dd);
         const auto = isAutoOffDay(date);
         const off = auto ? !this.work.has(iso) : this.hol.has(iso);
         const cls = ['cy-cell'];
+        if(cur) cls.push('cur-row');
         if(off) cls.push('off');
         if(off && !auto) cls.push('holiday');
         if(auto && !off) cls.push('work-override');
@@ -85,7 +89,7 @@ Views.calendar = {
     grid.querySelectorAll('.cy-cell[data-iso]').forEach(c=>c.addEventListener('click', ()=>{
       this.toggle(c.dataset.iso, c.dataset.auto === '1');
     }));
-    // Excel-style cross highlight: hovering a cell lights its month + day headers
+    // Excel-style cross highlight: light up the row + column of the hovered cell
     const gEl = grid.querySelector('.calyear-grid');
     gEl.addEventListener('mouseover', e=>{
       const cell = e.target.closest('.cy-cell[data-iso]');
@@ -95,13 +99,15 @@ Views.calendar = {
       const dh = gEl.querySelector(`.cy-daynum[data-d="${cell.dataset.d}"]`);
       if(mh) mh.classList.add('hl');
       if(dh) dh.classList.add('hl');
+      gEl.querySelectorAll(`.cy-cell[data-m="${cell.dataset.m}"],.cy-cell[data-d="${cell.dataset.d}"]`)
+        .forEach(c=>{ if(c !== cell) c.classList.add('hl-line'); });
     });
     gEl.addEventListener('mouseleave', ()=>this.clearHl(gEl));
     this.refreshMeta();
   },
 
   clearHl(gEl){
-    gEl.querySelectorAll('.hl').forEach(el=>el.classList.remove('hl'));
+    gEl.querySelectorAll('.hl,.hl-line').forEach(el=>el.classList.remove('hl','hl-line'));
   },
 
   toggle(iso, auto){
