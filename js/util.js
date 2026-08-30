@@ -19,7 +19,8 @@ function initialsOf(name){
 
 // ---------- dates & working-day calculation ----------
 // Off days: every Sunday, plus the 1st and 3rd Saturday of each month.
-function isOffDay(date){
+// Recurring off days: Sundays + 1st/3rd Saturdays
+function isAutoOffDay(date){
   const day = date.getDay(); // 0 = Sunday, 6 = Saturday
   if(day === 0) return true;
   if(day === 6){
@@ -27,6 +28,15 @@ function isOffDay(date){
     if(nthSaturday === 1 || nthSaturday === 3) return true;
   }
   return false;
+}
+// Admin-managed holidays (loaded from Supabase app_settings at boot)
+const CUSTOM_HOLIDAYS = new Set();
+function setCustomHolidays(dates){
+  CUSTOM_HOLIDAYS.clear();
+  (dates || []).forEach(d => CUSTOM_HOLIDAYS.add(String(d).slice(0,10)));
+}
+function isOffDay(date){
+  return isAutoOffDay(date) || CUSTOM_HOLIDAYS.has(isoOfDate(date));
 }
 function parseDateOnly(str){
   if(!str) return null;

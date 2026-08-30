@@ -42,6 +42,7 @@ const SECTIONS = [
   { key: 'worklog',  label: 'My Daily Work', icon: 'clipboard', show: () => !App.isAdmin },
   { key: 'review',   label: 'Review',   icon: 'check',     show: () => App.canReview },
   { key: 'reports',  label: 'Reports',  icon: 'chart',     show: () => App.canReview },
+  { key: 'calendar', label: 'Calendar', icon: 'cal',       show: () => App.isAdmin },
   { key: 'theme',    label: 'Theme',    icon: 'star',      show: () => App.isAdmin }
 ];
 
@@ -91,6 +92,11 @@ async function refreshCore(){
   const [devs, projects] = await Promise.all([apiLoadDevelopers(), apiLoadProjects()]);
   App.developers = devs;
   App.projects = projects;
+  // admin-managed holidays feed isOffDay() everywhere
+  try{
+    const h = await apiGetSetting('holidays');
+    if(h && h.dates) setCustomHolidays(h.dates);
+  }catch(e){ /* table may not exist yet */ }
 }
 
 // Badge on the Review nav item: number of team devs with no entry today (working days only)
