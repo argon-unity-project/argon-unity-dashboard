@@ -2343,6 +2343,25 @@ tbody tr:nth-child(even):hover{background:var(--surface-alt);}   /* keep zebra *
 .proj-status:hover,.status-inline:hover,.approve-chip:hover,.id-badge:hover{filter:none;transform:none;}
 .sidebar-user:not(.clickable):hover{box-shadow:var(--n-raise-sm);}
 
+/* =====================================================================
+   FLAT STAT CARDS + NO SIDEWAYS SCROLL + SLIM THEMED SCROLLBARS
+   ===================================================================== */
+/* stat cards + login card: flat bordered like other panels — no emboss, no hover */
+.stat-card{background:var(--bg);box-shadow:none;border:1px solid var(--panel-border);}
+.stat-card:hover{transform:none;box-shadow:none;border:1px solid var(--panel-border);}
+.login-card{box-shadow:none;border:1px solid var(--panel-border);}
+
+/* content areas never scroll sideways (tables keep horizontal scroll inside their card) */
+.app-body .main,.panel-body,.theme-panel-body,.day-body,.review-dev{overflow-x:hidden;}
+
+/* slim scrollbars that follow the theme */
+*{scrollbar-width:thin;scrollbar-color:var(--surface-hover) transparent;}
+*::-webkit-scrollbar{width:6px;height:6px;}
+*::-webkit-scrollbar-track{background:transparent;}
+*::-webkit-scrollbar-corner{background:transparent;}
+*::-webkit-scrollbar-thumb{background:var(--surface-hover);border-radius:100px;border:none;opacity:1;}
+*::-webkit-scrollbar-thumb:hover{background:var(--ink-faint);}
+
 /* day groups (history view): spaced like review rows */
 .day-head{padding:12px 16px;border-radius:14px;margin:4px 14px 0;}
 .day-group:first-child .day-head{margin-top:8px;}
