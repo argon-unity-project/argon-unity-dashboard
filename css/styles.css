@@ -2362,6 +2362,35 @@ tbody tr:nth-child(even):hover{background:var(--surface-alt);}   /* keep zebra *
 *::-webkit-scrollbar-thumb{background:var(--surface-hover);border-radius:100px;border:none;opacity:1;}
 *::-webkit-scrollbar-thumb:hover{background:var(--ink-faint);}
 
+/* =====================================================================
+   THEMED PRIMARY BUTTONS — no solid fill; raised neumorph surface with
+   accent-colored text/icon, pressed-in when clicked. Matches panels.
+   ===================================================================== */
+.btn-primary,.btn-square,.login-plain .btn-block{
+  background:var(--bg);color:var(--accent-ink);
+  border:1px solid var(--panel-border);border-radius:14px;
+  box-shadow:var(--n-raise-sm);
+}
+.btn-primary:hover,.btn-square:hover,.login-plain .btn-block:hover{
+  background:var(--bg);color:var(--hover-glow);
+  transform:none;filter:none;box-shadow:var(--n-raise-sm);
+}
+.btn-primary:active,.btn-square:active,.login-plain .btn-block:active{
+  transform:none;color:var(--select-color);box-shadow:var(--n-inset-sm);
+}
+.btn-primary:disabled{opacity:.55;}
+
+/* danger buttons follow the same language, in danger color */
+.btn-danger{
+  background:var(--bg);color:var(--danger);
+  border:1px solid var(--panel-border);box-shadow:var(--n-raise-sm);
+}
+.btn-danger:hover{background:var(--bg);color:var(--danger-hover);box-shadow:var(--n-raise-sm);}
+.btn-danger:active{box-shadow:var(--n-inset-sm);transform:none;}
+
+/* secondary buttons: same surface, neutral text */
+.btn-secondary{border:1px solid var(--panel-border);}
+
 /* day groups (history view): spaced like review rows */
 .day-head{padding:12px 16px;border-radius:14px;margin:4px 14px 0;}
 .day-group:first-child .day-head{margin-top:8px;}
