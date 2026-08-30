@@ -2448,6 +2448,39 @@ tbody tr:nth-child(even):hover{background:var(--surface-alt);}   /* keep zebra *
 .cal-legend .lg-work{background:var(--bg);border:1px solid var(--success);}
 .cal-legend .lg-today{background:var(--bg);border:1px solid var(--accent);}
 
+/* =====================================================================
+   FINAL POLISH — single-effect controls (no inset track + raised thumb
+   doubles): flat bordered tracks, pressed-in selection.
+   ===================================================================== */
+.seg{background:transparent;border:1px solid var(--panel-border);box-shadow:none;border-radius:12px;padding:3px;gap:2px;}
+.seg button{background:transparent;box-shadow:none;color:var(--ink-soft);border-radius:9px;}
+.seg button:hover{background:transparent;color:var(--hover-glow);}
+.seg button.active{background:var(--bg);box-shadow:var(--n-inset-sm);color:var(--select-color);}
+
+.theme-switch{background:transparent;border:1px solid var(--panel-border);box-shadow:none;}
+.theme-switch .thumb{background:var(--surface-hover);box-shadow:none;}
+
+/* pagination follows the same language */
+.page-btn{box-shadow:none;border:1px solid var(--panel-border);background:transparent;}
+.page-btn:hover:not(:disabled){color:var(--hover-glow);}
+.page-btn.active{background:var(--bg);border:1px solid transparent;box-shadow:var(--n-inset-sm);color:var(--select-color);}
+
+/* date-picker & dropdown popups: flat border, no double emboss */
+.dp-pop,.cs-pop{box-shadow:var(--shadow-lg);border:1px solid var(--panel-border);}
+.dp-nav,.modal-close,.copy-btn{box-shadow:none;border:1px solid var(--panel-border);}
+.dp-nav:hover,.modal-close:hover,.copy-btn:hover{box-shadow:none;}
+
+/* icon buttons in tables: flat until hover, no raised chip look */
+.actions-cell .icon-btn,.log-actions .icon-btn{box-shadow:none;border:1px solid transparent;}
+.actions-cell .icon-btn:hover,.log-actions .icon-btn:hover{box-shadow:none;border-color:var(--panel-border);filter:none;}
+.actions-cell .icon-btn:active,.log-actions .icon-btn:active{box-shadow:var(--n-inset-sm);}
+
+/* non-clickable chips & badges: flat pills, not raised buttons */
+.proj-status,.status-inline,.approve-chip,.tasks-chip,.missing-chip,.offday-chip,
+.day-total,.hero-count,.count-badge,.workdays-chip,.role-badge{
+  box-shadow:none;background:var(--surface-alt);border:1px solid var(--panel-border);
+}
+
 /* day groups (history view): spaced like review rows */
 .day-head{padding:12px 16px;border-radius:14px;margin:4px 14px 0;}
 .day-group:first-child .day-head{margin-top:8px;}

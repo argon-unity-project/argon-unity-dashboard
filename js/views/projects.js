@@ -172,7 +172,7 @@ Views.projects = {
             ${detailCard({ icon: ICONS.flag, label: 'End Date', value: p.endDate ? formatDateLong(p.endDate) : '', tone: 'teal' })}
             ${detailCard({ icon: ICONS.clock, label: 'Total Days', tone: 'amber',
               value: workDays === null ? '' : `${workDays} working day${workDays===1?'':'s'}`,
-              emptyText: 'Set both dates', sub: workDays === null ? '' : 'Excl. Sundays &amp; 1st/3rd Sat' })}
+              emptyText: 'Set both dates', sub: workDays === null ? '' : 'Excl. off days' })}
           </div>
           ${detailCard({ span2: true, icon: ICONS.note, label: 'Remarks',
             html: p.remarks ? escapeHtml(p.remarks).replace(/\n/g,'<br>') : '', value: p.remarks || '', emptyText: 'No remarks' })}
@@ -295,7 +295,7 @@ Views.projects = {
       const days = calculateWorkingDays(s, e2);
       hintEl.innerHTML = days === null
         ? `<span class="workdays-chip danger">${ICONS.warn}<span>End date must be on or after the start date.</span></span>`
-        : `<span class="workdays-chip">${ICONS.clock}<span>${days} working day${days===1?'':'s'}</span></span><span class="dp-summary-note">Excludes Sundays &amp; the 1st/3rd Saturday</span>`;
+        : `<span class="workdays-chip">${ICONS.clock}<span>${days} working day${days===1?'':'s'}</span></span><span class="dp-summary-note">Excludes Sundays &amp; marked holidays</span>`;
     };
     document.getElementById('pf-start').addEventListener('change', ()=>{
       const s = document.getElementById('pf-start').value;

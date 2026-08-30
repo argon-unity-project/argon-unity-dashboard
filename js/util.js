@@ -18,7 +18,7 @@ function initialsOf(name){
 }
 
 // ---------- dates & working-day calculation ----------
-// Off days: every Sunday, plus the 1st and 3rd Saturday of each month.
+
 // Recurring off days: Sundays only (Saturdays are working by default —
 // the admin marks specific ones off in the Work Calendar)
 function isAutoOffDay(date){

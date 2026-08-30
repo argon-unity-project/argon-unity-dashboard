@@ -73,7 +73,6 @@ Views.review = {
         <div class="stat-card"><span class="stat-ico teal">${ICONS.clipboard}</span><div class="stat-body"><div class="stat-val">${totalTasks}</div><div class="stat-label">Team tasks</div></div></div>
         <div class="stat-card"><span class="stat-ico amber">${ICONS.clock}</span><div class="stat-body"><div class="stat-val">${pendingCount}</div><div class="stat-label">Pending approval</div></div></div>
       </div>
-      ${off ? `<div class="panel"><div class="panel-body" style="padding:12px 16px;"><div class="inline-note">${ICONS.info}<span><b>${formatDateFriendly(this.date)} is an off day</b> (Sunday or 1st/3rd Saturday) — updates are optional.</span></div></div></div>` : ''}
       <div class="panel fill">
         <div class="panel-head">
           <h2>${ICONS.users}${formatDateFriendly(this.date)}</h2>
