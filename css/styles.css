@@ -2526,3 +2526,24 @@ tbody tr:nth-child(even):hover{background:var(--surface-alt);}   /* keep zebra *
 /* full-value popup: JSON keeps its indentation + horizontal scroll,
    a long plain string wraps instead */
 .status-code.wrap{white-space:pre-wrap;word-break:break-word;}
+
+/* full-screen value popup: header + footer stay put, only the value body
+   scrolls — keeps both close controls reachable no matter how long the
+   JSON payload is. */
+.modal.modal-full{
+  width:calc(100vw - 48px);height:calc(100vh - 48px);
+  max-width:calc(100vw - 48px);max-height:calc(100vh - 48px);
+}
+.modal-full .modal-scroll{display:flex;flex-direction:column;height:100%;overflow:hidden;}
+.modal-full .modal-header,.modal-full .modal-footer{flex-shrink:0;}
+.modal-full .modal-body{flex:1;min-height:0;overflow-y:auto;}
+.modal-full .status-code{height:100%;box-sizing:border-box;}
+
+/* colour-tagged JSON in the full-value popup, so structured data reads as
+   formatted output rather than a flat block of text */
+.json-pretty{font-size:13px;line-height:1.6;}
+.json-key{color:var(--accent-ink);font-weight:600;}
+.json-string{color:var(--success);}
+.json-number{color:var(--amber);}
+.json-bool{color:var(--danger);font-weight:600;}
+.json-null{color:var(--ink-faint);font-style:italic;}

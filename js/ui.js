@@ -201,7 +201,7 @@ function closeModal(){
 }
 function openModalShell(innerHtml, opts){
   opts = opts || {};
-  const cls = opts.form ? ' modal-form' : (opts.xwide ? ' modal-xwide' : (opts.wide ? ' modal-wide' : ''));
+  const cls = opts.full ? ' modal-full' : (opts.form ? ' modal-form' : (opts.xwide ? ' modal-xwide' : (opts.wide ? ' modal-wide' : '')));
   document.getElementById('modal-root').innerHTML = `<div class="modal-overlay" id="modal-overlay"><div class="modal${cls}"><div class="modal-accent-bar"></div><div class="modal-scroll">${innerHtml}</div></div></div>`;
   document.getElementById('modal-overlay').addEventListener('click', (e)=>{
     if(e.target.id === 'modal-overlay'){ closeModal(); return; }

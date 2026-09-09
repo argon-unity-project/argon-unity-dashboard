@@ -100,6 +100,32 @@ function truncatePreview(str, max){
   return str.length > max ? str.slice(0, max - 1) + '…' : str;
 }
 
+// Renders a parsed JSON value as indented, colour-tagged HTML (keys,
+// strings, numbers, booleans, null each get their own span class) instead
+// of a flat block of text, so structured values read as "formatted data"
+// rather than a raw JSON dump.
+function syntaxHighlightJson(value, indent){
+  indent = indent || 0;
+  const pad = '  '.repeat(indent);
+  const padIn = '  '.repeat(indent + 1);
+  if(value === null) return '<span class="json-null">null</span>';
+  if(Array.isArray(value)){
+    if(!value.length) return '[]';
+    const items = value.map(v => padIn + syntaxHighlightJson(v, indent + 1));
+    return '[\n' + items.join(',\n') + '\n' + pad + ']';
+  }
+  if(typeof value === 'object'){
+    const keys = Object.keys(value);
+    if(!keys.length) return '{}';
+    const items = keys.map(k => `${padIn}<span class="json-key">${escapeHtml(JSON.stringify(k))}</span>: ${syntaxHighlightJson(value[k], indent + 1)}`);
+    return '{\n' + items.join(',\n') + '\n' + pad + '}';
+  }
+  if(typeof value === 'string') return `<span class="json-string">${escapeHtml(JSON.stringify(value))}</span>`;
+  if(typeof value === 'number') return `<span class="json-number">${value}</span>`;
+  if(typeof value === 'boolean') return `<span class="json-bool">${value}</span>`;
+  return escapeHtml(String(value));
+}
+
 Views.datamanager = {
   webapps: [],
   search: '',
@@ -376,7 +402,13 @@ Views.datamanager = {
     const wrap = document.getElementById('rc-table-wrap');
     if(!wrap || !this._rcRows) return;
     const q = (this._rcSearch || '').trim().toLowerCase();
-    const rows = q ? this._rcRows.filter(r => r.key.toLowerCase().includes(q) || r.value.toLowerCase().includes(q)) : this._rcRows;
+    const rows = (q ? this._rcRows.filter(r => r.key.toLowerCase().includes(q) || r.value.toLowerCase().includes(q)) : this._rcRows.slice())
+      .sort((a, b) => {
+        const aJson = tryParseStructured(a.value) !== null;
+        const bJson = tryParseStructured(b.value) !== null;
+        if(aJson !== bJson) return aJson ? -1 : 1;
+        return a.key.localeCompare(b.key);
+      });
     const countEl = document.getElementById('rc-count');
     if(countEl) countEl.textContent = this._rcRows.length ? `${rows.length} of ${this._rcRows.length} parameter${this._rcRows.length === 1 ? '' : 's'}` : '';
     if(!this._rcRows.length){
@@ -434,6 +466,7 @@ Views.datamanager = {
     const parsed = tryParseStructured(row.value);
     const isJson = parsed !== null;
     const pretty = isJson ? JSON.stringify(parsed, null, 2) : row.value;
+    const bodyHtml = isJson ? syntaxHighlightJson(parsed) : escapeHtml(pretty);
     const html = `
       <div class="modal-header">
         <div>
@@ -446,12 +479,12 @@ Views.datamanager = {
         <button class="modal-close" aria-label="Close">${ICONS.x}</button>
       </div>
       <div class="modal-body">
-        <pre class="status-code${isJson ? '' : ' wrap'}">${escapeHtml(pretty)}</pre>
+        <pre class="status-code json-pretty${isJson ? '' : ' wrap'}">${bodyHtml}</pre>
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary" id="rcv-close">Close</button>
       </div>`;
-    openModalShell(html, { wide: true });
+    openModalShell(html, { full: true });
     document.getElementById('rcv-close').addEventListener('click', closeModal);
   }
 };
