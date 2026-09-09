@@ -94,16 +94,16 @@ Views.datamanager = {
       this.webapps = await apiLoadFirebaseWebapps();
     }catch(err){
       main.innerHTML = `<div class="panel"><div class="panel-body"><div class="inline-note danger">${ICONS.warn}
-        <span><b>Data Manager table missing.</b> Run the "FIREBASE WEBAPPS" block at the bottom of supabase-setup.sql in the Supabase SQL editor, then reload.</span></div></div></div>`;
+        <span><b>ADM table missing.</b> Run the "FIREBASE WEBAPPS" block at the bottom of supabase-setup.sql in the Supabase SQL editor, then reload.</span></div></div></div>`;
       return;
     }
     this.webapps.sort((a, b) => a.name.localeCompare(b.name));
     main.innerHTML = `
       <div class="fill-page">
         <div class="main-head">
-          <div><h1>Data Manager</h1><p class="sub">${this.webapps.length} Firebase webapp${this.webapps.length === 1 ? '' : 's'} connected</p></div>
+          <div><h1>App Data Manager</h1><p class="sub">${this.webapps.length} app${this.webapps.length === 1 ? '' : 's'} connected</p></div>
           <div class="head-actions">
-            <button class="btn btn-primary" id="dm-add">${ICONS.plus}Add Webapp</button>
+            <button class="btn btn-primary" id="dm-add">${ICONS.plus}Add App</button>
           </div>
         </div>
         <div class="toolbar">
@@ -140,8 +140,8 @@ Views.datamanager = {
     const list = this.filtered();
     if(!list.length){
       card.innerHTML = `<div class="empty-state">${ICONS.empty}
-        <p>${this.webapps.length ? 'No webapps match your search.' : 'No Firebase webapps added yet — add one to browse its Remote Config.'}</p>
-        ${!this.webapps.length ? `<button class="btn btn-primary btn-sm" id="dm-empty-add">${ICONS.plus}Add Webapp</button>` : ''}</div>`;
+        <p>${this.webapps.length ? 'No apps match your search.' : 'No apps added yet — add one to browse its Remote Config.'}</p>
+        ${!this.webapps.length ? `<button class="btn btn-primary btn-sm" id="dm-empty-add">${ICONS.plus}Add App</button>` : ''}</div>`;
       const emptyBtn = document.getElementById('dm-empty-add');
       if(emptyBtn) emptyBtn.addEventListener('click', () => this.openModal(null));
       return;
@@ -149,20 +149,16 @@ Views.datamanager = {
     card.innerHTML = `
       <div class="table-scroll"><table>
         <thead><tr>
-          <th style="width:120px;">ID</th>
           <th>Project Name</th>
           <th>Firebase Project ID</th>
-          <th style="width:110px;">Added</th>
           <th style="width:110px;"></th>
         </tr></thead>
         <tbody>
           ${list.map(w => {
             const pid = (w.config && w.config.projectId) || '—';
             return `<tr data-id="${w.id}">
-              <td><span class="id-badge">${w.id}</span></td>
               <td><span class="game-name" title="${escapeHtml(w.name)}">${escapeHtml(w.name)}</span></td>
               <td><span class="mono">${escapeHtml(pid)}</span></td>
-              <td class="date-cell">${w.createdAt ? formatDateShort(w.createdAt) : '—'}</td>
               <td><div class="actions-cell">
                 <button class="icon-btn accent" data-action="view" title="View Remote Config">${ICONS.view}</button>
                 <button class="icon-btn" data-action="edit" title="Edit">${ICONS.edit}</button>
@@ -192,14 +188,13 @@ Views.datamanager = {
     const html = `
       <div class="modal-header">
         <div>
-          <h2>${editing ? 'Edit Webapp' : 'Add Webapp'}</h2>
-          <p>${editing ? 'Update the name or paste a fresh config.' : 'Paste the Firebase config for one webapp project.'}</p>
+          <h2>${editing ? 'Edit App' : 'Add App'}</h2>
+          <p>${editing ? 'Update the name or paste a fresh config.' : 'Paste the Firebase config for one app.'}</p>
         </div>
         <button class="modal-close" aria-label="Close">${ICONS.x}</button>
       </div>
       <div class="modal-body">
         <div class="form-grid">
-          <div class="field"><label>ID</label><div class="readonly-id">${editing ? editing.id : nextId + '  (assigned on save)'}</div></div>
           <div class="field" id="field-name">
             <label for="dm-name">Project Name <span class="req-star">*</span></label>
             <input type="text" id="dm-name" value="${editing ? escapeHtml(editing.name) : ''}" placeholder="e.g. Sheep Doku — Web" maxlength="80" autocomplete="off" />
@@ -215,7 +210,7 @@ Views.datamanager = {
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary" id="dm-cancel">Cancel</button>
-        <button class="btn btn-primary" id="dm-save">${editing ? 'Save Changes' : 'Add Webapp'}</button>
+        <button class="btn btn-primary" id="dm-save">${editing ? 'Save Changes' : 'Add App'}</button>
       </div>`;
     openModalShell(html, { form: true });
     document.getElementById('dm-cancel').addEventListener('click', closeModal);
@@ -254,7 +249,7 @@ Views.datamanager = {
       } else {
         const w = await apiInsertFirebaseWebapp({ id: nextId, name, config, createdBy: App.me ? App.me.id : null });
         this.webapps.push(w);
-        toast('success', ICONS.check, `Added ${w.id} — "${name}".`);
+        toast('success', ICONS.check, `Added "${name}".`);
       }
       closeModal();
       this.renderTable();
@@ -269,15 +264,15 @@ Views.datamanager = {
     const w = this.webapps.find(x => x.id === id);
     if(!w) return;
     confirmModal({
-      title: 'Delete Webapp?', danger: true, confirmLabel: 'Delete Webapp',
-      message: `“${escapeHtml(w.name)}” (${w.id}) will be removed from Data Manager. This can't be undone.`,
+      title: 'Delete App?', danger: true, confirmLabel: 'Delete App',
+      message: `“${escapeHtml(w.name)}” will be removed from ADM. This can't be undone.`,
       onConfirm: async () => {
         try{
           await apiDeleteFirebaseWebapp(id);
           this.webapps = this.webapps.filter(x => x.id !== id);
           closeModal();
           this.renderTable();
-          toast('success', ICONS.check, `Deleted ${w.id}.`);
+          toast('success', ICONS.check, `Deleted "${w.name}".`);
         }catch(err){
           toast('danger', ICONS.warn, `Couldn't delete — ${err.message || 'try again.'}`);
         }
@@ -306,7 +301,6 @@ Views.datamanager = {
           <span class="mini-note" id="rc-count"></span>
         </div>
         <div id="rc-table-wrap"></div>
-        <p class="status-hint" style="margin-top:12px;">Showing this webapp's Remote Config as its users would receive it (default-condition values) — a public web config can't show per-condition targeting the way the Firebase Console does. If loading keeps failing, confirm the project has a published Remote Config and that this API key isn't restricted to a different domain (Google Cloud Console → Credentials).</p>
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary" id="rc-close-btn">Close</button>

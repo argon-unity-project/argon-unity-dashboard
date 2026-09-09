@@ -43,7 +43,7 @@ const SECTIONS = [
   { key: 'review',   label: 'Review',   icon: 'check',     show: () => App.canReview },
   { key: 'reports',  label: 'Reports',  icon: 'chart',     show: () => App.canReview },
   { key: 'calendar', label: 'Calendar', icon: 'cal',       show: () => App.isAdmin },
-  { key: 'datamanager', label: 'Data Manager', icon: 'db', show: () => App.isAdmin },
+  { key: 'datamanager', label: 'ADM', icon: 'db', show: () => App.isAdmin },
   { key: 'theme',    label: 'Theme',    icon: 'star',      show: () => App.isAdmin }
 ];
 
