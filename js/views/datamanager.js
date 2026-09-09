@@ -81,6 +81,25 @@ async function fetchRemoteConfigFor(webapp){
   });
 }
 
+// A Remote Config value is treated as "structured" only when it parses to
+// a JSON object or array — a plain string/number that happens to be valid
+// JSON (e.g. "42") still displays as a single value, not as JSON.
+function tryParseStructured(value){
+  if(typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  if(!trimmed || (trimmed[0] !== '{' && trimmed[0] !== '[')) return null;
+  try{
+    const parsed = JSON.parse(trimmed);
+    if(parsed && typeof parsed === 'object') return parsed;
+  }catch(e){ /* not JSON */ }
+  return null;
+}
+
+function truncatePreview(str, max){
+  max = max || 90;
+  return str.length > max ? str.slice(0, max - 1) + '…' : str;
+}
+
 Views.datamanager = {
   webapps: [],
   search: '',
@@ -303,15 +322,13 @@ Views.datamanager = {
   renderDetail(w){
     const main = document.getElementById('main');
     if(!main) return;
+    const pid = (w.config && w.config.projectId) || w.id;
     main.innerHTML = `
       <div class="fill-page">
         <div class="main-head">
           <div class="dm-detail-head">
             <button class="btn btn-secondary btn-sm" id="dm-back">${ICONS.chevL}Back</button>
-            <div>
-              <h1>${escapeHtml(w.name)}</h1>
-              <p class="sub mono">${escapeHtml((w.config && w.config.projectId) || w.id)}</p>
-            </div>
+            <h1>${escapeHtml(w.name)} <span class="dm-detail-id">(${escapeHtml(pid)})</span></h1>
           </div>
           <div class="head-actions">
             <button class="btn btn-secondary" id="rc-refresh-btn">${ICONS.refresh}Refresh</button>
@@ -373,25 +390,68 @@ Views.datamanager = {
     wrap.innerHTML = `
       <div class="table-scroll"><table>
         <thead><tr>
-          <th>Parameter</th>
+          <th style="width:240px;">Parameter</th>
           <th>Value</th>
-          <th style="width:96px;">Source</th>
           <th style="width:48px;"></th>
         </tr></thead>
         <tbody>
-          ${rows.map(r => `<tr>
-            <td><span class="mono">${escapeHtml(r.key)}</span></td>
-            <td><span class="rc-value">${escapeHtml(r.value)}</span></td>
-            <td><span class="rc-source ${escapeHtml(r.source)}">${escapeHtml(r.source)}</span></td>
-            <td><button type="button" class="copy-btn" data-copy="${escapeHtml(r.value)}" title="Copy value">${ICONS.copy}</button></td>
-          </tr>`).join('')}
+          ${rows.map(r => {
+            const parsed = tryParseStructured(r.value);
+            const isJson = parsed !== null;
+            const preview = isJson ? JSON.stringify(parsed) : r.value;
+            const copyVal = isJson ? JSON.stringify(parsed, null, 2) : r.value;
+            return `<tr data-key="${escapeHtml(r.key)}">
+              <td><span class="mono">${escapeHtml(r.key)}</span></td>
+              <td>
+                <span class="rc-value" title="Double-click to view the full value">
+                  ${isJson ? '<span class="rc-json-tag">JSON</span>' : ''}${escapeHtml(truncatePreview(preview, 90))}
+                </span>
+              </td>
+              <td><button type="button" class="copy-btn" data-copy="${escapeHtml(copyVal)}" title="Copy value">${ICONS.copy}</button></td>
+            </tr>`;
+          }).join('')}
         </tbody>
       </table></div>`;
     // This table lives on a full page now (not inside a modal), so the
-    // modal-overlay's delegated copy-button handler doesn't reach it —
-    // bind copy directly.
-    wrap.querySelectorAll('.copy-btn[data-copy]').forEach(b => {
-      b.addEventListener('click', () => copyText(b.getAttribute('data-copy'), b));
+    // modal-overlay's delegated copy-button handler doesn't reach it here —
+    // bind copy directly. Double-click a row to see the full value.
+    wrap.querySelectorAll('tbody tr').forEach(tr => {
+      const key = tr.dataset.key;
+      tr.addEventListener('dblclick', () => {
+        const row = this._rcRows.find(x => x.key === key);
+        if(row) this.openValueDetail(row);
+      });
     });
+    wrap.querySelectorAll('.copy-btn[data-copy]').forEach(b => {
+      b.addEventListener('click', e => {
+        e.stopPropagation();
+        copyText(b.getAttribute('data-copy'), b);
+      });
+    });
+  },
+
+  openValueDetail(row){
+    const parsed = tryParseStructured(row.value);
+    const isJson = parsed !== null;
+    const pretty = isJson ? JSON.stringify(parsed, null, 2) : row.value;
+    const html = `
+      <div class="modal-header">
+        <div>
+          <h2>${escapeHtml(row.key)}</h2>
+          <p class="mono" style="display:flex;align-items:center;gap:6px;">
+            ${isJson ? '<span class="rc-json-tag">JSON</span>' : 'Value'}
+            <button type="button" class="copy-btn" data-copy="${escapeHtml(pretty)}" title="Copy value">${ICONS.copy}</button>
+          </p>
+        </div>
+        <button class="modal-close" aria-label="Close">${ICONS.x}</button>
+      </div>
+      <div class="modal-body">
+        <pre class="status-code${isJson ? '' : ' wrap'}">${escapeHtml(pretty)}</pre>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="rcv-close">Close</button>
+      </div>`;
+    openModalShell(html, { wide: true });
+    document.getElementById('rcv-close').addEventListener('click', closeModal);
   }
 };
