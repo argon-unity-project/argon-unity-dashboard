@@ -239,3 +239,38 @@ async function apiDeleteSetting(key){
   const { error } = await sb.from('app_settings').delete().eq('key', key);
   if(error) throw error;
 }
+// ---------- firebase webapps (Data Manager) ----------
+function rowToFirebaseWebapp(row){
+  return {
+    id: row.id, name: row.name, config: row.config || {},
+    createdAt: row.created_at, createdBy: row.created_by || null
+  };
+}
+async function apiLoadFirebaseWebapps(){
+  const { data, error } = await sb.from('firebase_webapps').select('*');
+  if(error) throw error;
+  return data.map(rowToFirebaseWebapp);
+}
+async function apiNextFbwId(){
+  const { data, error } = await sb.rpc('next_fbw_id');
+  if(error) throw error;
+  return data;
+}
+async function apiInsertFirebaseWebapp(w){
+  const { data, error } = await sb.from('firebase_webapps').insert({
+    id: w.id, name: w.name, config: w.config, created_by: w.createdBy || null
+  }).select().single();
+  if(error) throw error;
+  return rowToFirebaseWebapp(data);
+}
+async function apiUpdateFirebaseWebapp(id, fields){
+  const patch = {};
+  if('name' in fields) patch.name = fields.name;
+  if('config' in fields) patch.config = fields.config;
+  const { error } = await sb.from('firebase_webapps').update(patch).eq('id', id);
+  if(error) throw error;
+}
+async function apiDeleteFirebaseWebapp(id){
+  const { error } = await sb.from('firebase_webapps').delete().eq('id', id);
+  if(error) throw error;
+}

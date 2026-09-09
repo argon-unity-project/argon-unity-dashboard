@@ -231,3 +231,47 @@ create policy settings_update on public.app_settings
   using (my_role() = 'admin') with check (my_role() = 'admin');
 create policy settings_delete on public.app_settings
   for delete to authenticated using (my_role() = 'admin');
+
+-- ---------------------------------------------------------------------------
+-- 6. FIREBASE WEBAPPS (Data Manager tab — admin-only)
+--    Stores each Firebase webapp's PUBLIC client config (apiKey, projectId,
+--    appId, ...) so the dashboard can connect in the browser and show that
+--    project's Remote Config. Never store a service-account / admin secret
+--    here — this table (and the config it holds) is only as private as your
+--    Supabase RLS policies below, and the values are sent to the browser.
+--    Safe to re-run.
+-- ---------------------------------------------------------------------------
+create table if not exists public.firebase_webapps (
+  id         text primary key,
+  name       text not null,
+  config     jsonb not null,
+  created_by text references public.developers(id),
+  created_at timestamptz not null default now()
+);
+
+alter table public.firebase_webapps enable row level security;
+
+create or replace function public.next_fbw_id()
+returns text language sql stable security definer set search_path = public as
+$$
+  select 'FBW' || lpad((coalesce(max(nullif(regexp_replace(id, '\D', '', 'g'), '')::int), 0) + 1)::text, 3, '0')
+  from firebase_webapps
+$$;
+grant execute on function public.next_fbw_id() to authenticated;
+
+drop policy if exists fbw_select on public.firebase_webapps;
+drop policy if exists fbw_insert on public.firebase_webapps;
+drop policy if exists fbw_update on public.firebase_webapps;
+drop policy if exists fbw_delete on public.firebase_webapps;
+
+-- Admin-only in every direction — matches the Data Manager tab, which only
+-- App.isAdmin ever sees in the UI.
+create policy fbw_select on public.firebase_webapps
+  for select to authenticated using (my_role() = 'admin');
+create policy fbw_insert on public.firebase_webapps
+  for insert to authenticated with check (my_role() = 'admin');
+create policy fbw_update on public.firebase_webapps
+  for update to authenticated
+  using (my_role() = 'admin') with check (my_role() = 'admin');
+create policy fbw_delete on public.firebase_webapps
+  for delete to authenticated using (my_role() = 'admin');
