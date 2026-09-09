@@ -537,7 +537,6 @@
 
   /* ---------- Detail popups ---------- */
   .modal.modal-wide{max-width:560px;}
-  .modal.modal-xwide{max-width:940px;}
   .detail-hero{display:flex;align-items:center;gap:13px;min-width:0;flex:1 1 auto;}
   .detail-avatar{
     width:47px;height:47px;border-radius:14px;flex-shrink:0;
@@ -2486,10 +2485,31 @@ tbody tr:nth-child(even):hover{background:var(--surface-alt);}   /* keep zebra *
 .day-head{padding:12px 16px;border-radius:14px;margin:4px 14px 0;}
 .day-group:first-child .day-head{margin-top:8px;}
 .day-body{margin:4px 14px 12px;}
-/* ---------- Data Manager: Firebase Remote Config panel ---------- */
-.rc-toolbar{display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap;}
-.rc-search-wrap{flex:1 1 220px;min-width:180px;}
-.rc-table-scroll{max-height:52vh;}
+/* ---------- App Data Manager: card grid + Remote Config detail page ---------- */
+.dm-grid-wrap{overflow-y:auto;min-height:0;padding:2px 2px 4px;}
+.dm-card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;}
+.dm-card{
+  background:var(--surface);border:1px solid var(--border-strong);border-radius:var(--radius);
+  padding:14px 14px 12px;display:flex;flex-direction:column;gap:12px;min-width:0;
+  transition:border-color .15s ease,box-shadow .2s ease,transform .15s ease;
+}
+.dm-card:hover{border-color:var(--accent);box-shadow:var(--glow-1);transform:translateY(-1px);}
+.dm-card-main{display:flex;flex-direction:column;gap:4px;min-width:0;}
+.dm-card-name{
+  font-weight:600;font-size:14.5px;color:var(--ink);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.dm-card-pid{
+  font-size:11.5px;color:var(--ink-faint);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.dm-card-actions{
+  display:flex;gap:4px;justify-content:flex-end;padding-top:9px;
+  border-top:1px solid var(--border);
+}
+.dm-detail-head{display:flex;align-items:center;gap:14px;min-width:0;}
+.dm-detail-head h1{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.dm-rc-count{margin-left:auto;align-self:center;white-space:nowrap;}
 .rc-value{font-family:var(--font-mono);font-size:12.5px;white-space:pre-wrap;word-break:break-word;line-height:1.5;}
 .rc-source{
   display:inline-flex;align-items:center;padding:2.5px 10px;border-radius:100px;

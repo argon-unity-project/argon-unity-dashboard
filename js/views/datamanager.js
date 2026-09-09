@@ -1,9 +1,9 @@
 // ============================================================
-// VIEW: Data Manager — Firebase webapp registry + live Remote Config
-// browser (admin-only). Each row stores one webapp's public client
-// config (apiKey, projectId, appId, ...); double-click connects to
-// that Firebase project in the browser and shows its Remote Config
-// parameters, the same way that webapp's own users would receive them.
+// VIEW: App Data Manager (nav label "ADM") — Firebase webapp
+// registry + live Remote Config browser (admin-only). Each card
+// stores one webapp's public client config (apiKey, projectId,
+// appId, ...); viewing one swaps the whole page for a detail
+// screen with its Remote Config, with a Back button to return.
 // ============================================================
 window.Views = window.Views || {};
 
@@ -84,11 +84,15 @@ async function fetchRemoteConfigFor(webapp){
 Views.datamanager = {
   webapps: [],
   search: '',
+  screen: 'list',   // 'list' | 'detail'
+  activeId: null,
   _rcRows: null,
   _rcSearch: '',
 
   async render(main){
     if(!App.isAdmin){ main.innerHTML = ''; return; }
+    this.screen = 'list';
+    this.activeId = null;
     main.innerHTML = '<div class="loading-wrap"><div class="spinner"></div><span>Loading…</span></div>';
     try{
       this.webapps = await apiLoadFirebaseWebapps();
@@ -97,7 +101,24 @@ Views.datamanager = {
         <span><b>ADM table missing.</b> Run the "FIREBASE WEBAPPS" block at the bottom of supabase-setup.sql in the Supabase SQL editor, then reload.</span></div></div></div>`;
       return;
     }
-    this.webapps.sort((a, b) => a.name.localeCompare(b.name));
+    this.renderList();
+  },
+
+  // Cards, newest-added first.
+  filteredSorted(){
+    let list = [...this.webapps];
+    const q = this.search.trim().toLowerCase();
+    if(q){
+      list = list.filter(w => w.name.toLowerCase().includes(q) ||
+        String((w.config || {}).projectId || '').toLowerCase().includes(q));
+    }
+    list.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    return list;
+  },
+
+  renderList(){
+    const main = document.getElementById('main');
+    if(!main) return;
     main.innerHTML = `
       <div class="fill-page">
         <div class="main-head">
@@ -114,67 +135,49 @@ Views.datamanager = {
             </div>
           </div>
         </div>
-        <div class="table-card" id="dm-table"></div>
+        <div class="dm-grid-wrap fill-flex" id="dm-grid"></div>
       </div>`;
     document.getElementById('dm-add').addEventListener('click', () => this.openModal(null));
     document.getElementById('dm-search').addEventListener('input', debounce(e => {
       this.search = e.target.value;
-      this.renderTable();
+      this.renderGrid();
     }, 150));
-    this.renderTable();
+    this.renderGrid();
   },
 
-  filtered(){
-    let list = [...this.webapps];
-    const q = this.search.trim().toLowerCase();
-    if(q){
-      list = list.filter(w => w.name.toLowerCase().includes(q) ||
-        String((w.config || {}).projectId || '').toLowerCase().includes(q));
-    }
-    return list;
-  },
-
-  renderTable(){
-    const card = document.getElementById('dm-table');
-    if(!card) return;
-    const list = this.filtered();
+  renderGrid(){
+    const wrap = document.getElementById('dm-grid');
+    if(!wrap) return;
+    const list = this.filteredSorted();
     if(!list.length){
-      card.innerHTML = `<div class="empty-state">${ICONS.empty}
+      wrap.innerHTML = `<div class="empty-state">${ICONS.empty}
         <p>${this.webapps.length ? 'No apps match your search.' : 'No apps added yet — add one to browse its Remote Config.'}</p>
         ${!this.webapps.length ? `<button class="btn btn-primary btn-sm" id="dm-empty-add">${ICONS.plus}Add App</button>` : ''}</div>`;
       const emptyBtn = document.getElementById('dm-empty-add');
       if(emptyBtn) emptyBtn.addEventListener('click', () => this.openModal(null));
       return;
     }
-    card.innerHTML = `
-      <div class="table-scroll"><table>
-        <thead><tr>
-          <th>Project Name</th>
-          <th>Firebase Project ID</th>
-          <th style="width:110px;"></th>
-        </tr></thead>
-        <tbody>
-          ${list.map(w => {
-            const pid = (w.config && w.config.projectId) || '—';
-            return `<tr data-id="${w.id}">
-              <td><span class="game-name" title="${escapeHtml(w.name)}">${escapeHtml(w.name)}</span></td>
-              <td><span class="mono">${escapeHtml(pid)}</span></td>
-              <td><div class="actions-cell">
-                <button class="icon-btn accent" data-action="view" title="View Remote Config">${ICONS.view}</button>
-                <button class="icon-btn" data-action="edit" title="Edit">${ICONS.edit}</button>
-                <button class="icon-btn danger" data-action="del" title="Delete">${ICONS.trash}</button>
-              </div></td>
-            </tr>`;
-          }).join('')}
-        </tbody>
-      </table></div>`;
-    card.querySelectorAll('tbody tr').forEach(tr => {
-      const id = tr.dataset.id;
-      tr.addEventListener('dblclick', () => this.openConfigPanel(id));
-      tr.querySelectorAll('[data-action]').forEach(btn => btn.addEventListener('click', e => {
+    wrap.innerHTML = `<div class="dm-card-grid">${list.map(w => {
+      const pid = (w.config && w.config.projectId) || '—';
+      return `<div class="dm-card" data-id="${w.id}">
+        <div class="dm-card-main">
+          <span class="dm-card-name" title="${escapeHtml(w.name)}">${escapeHtml(w.name)}</span>
+          <span class="dm-card-pid mono" title="${escapeHtml(pid)}">${escapeHtml(pid)}</span>
+        </div>
+        <div class="dm-card-actions">
+          <button class="icon-btn accent" data-action="view" title="View Remote Config">${ICONS.view}</button>
+          <button class="icon-btn" data-action="edit" title="Edit">${ICONS.edit}</button>
+          <button class="icon-btn danger" data-action="del" title="Delete">${ICONS.trash}</button>
+        </div>
+      </div>`;
+    }).join('')}</div>`;
+    wrap.querySelectorAll('.dm-card').forEach(card => {
+      const id = card.dataset.id;
+      card.addEventListener('dblclick', () => this.openDetail(id));
+      card.querySelectorAll('[data-action]').forEach(btn => btn.addEventListener('click', e => {
         e.stopPropagation();
         const a = btn.dataset.action;
-        if(a === 'view') this.openConfigPanel(id);
+        if(a === 'view') this.openDetail(id);
         if(a === 'edit') this.openModal(id);
         if(a === 'del') this.confirmDelete(id);
       }));
@@ -252,7 +255,7 @@ Views.datamanager = {
         toast('success', ICONS.check, `Added "${name}".`);
       }
       closeModal();
-      this.renderTable();
+      this.renderGrid();
     }catch(err){
       toast('danger', ICONS.warn, `Couldn't save — ${err.message || 'try again.'}`);
     }finally{
@@ -271,7 +274,7 @@ Views.datamanager = {
           await apiDeleteFirebaseWebapp(id);
           this.webapps = this.webapps.filter(x => x.id !== id);
           closeModal();
-          this.renderTable();
+          this.renderGrid();
           toast('success', ICONS.check, `Deleted "${w.name}".`);
         }catch(err){
           toast('danger', ICONS.warn, `Couldn't delete — ${err.message || 'try again.'}`);
@@ -280,41 +283,58 @@ Views.datamanager = {
     });
   },
 
-  async openConfigPanel(id){
+  // ---------- detail screen: replaces the list page, Back returns to it ----------
+  openDetail(id){
     const w = this.webapps.find(x => x.id === id);
     if(!w) return;
+    this.screen = 'detail';
+    this.activeId = id;
     this._rcRows = null;
     this._rcSearch = '';
-    const html = `
-      <div class="modal-header">
-        <div>
-          <h2>${escapeHtml(w.name)}</h2>
-          <p class="mono">${escapeHtml((w.config && w.config.projectId) || w.id)}</p>
-        </div>
-        <button class="modal-close" id="rc-close" aria-label="Close">${ICONS.x}</button>
-      </div>
-      <div class="modal-body">
-        <div class="rc-toolbar">
-          <div class="search-wrap rc-search-wrap">${ICONS.search}
-            <input type="search" id="rc-search" placeholder="Filter parameters…" />
+    this.renderDetail(w);
+  },
+
+  goBack(){
+    this.screen = 'list';
+    this.activeId = null;
+    this.renderList();
+  },
+
+  renderDetail(w){
+    const main = document.getElementById('main');
+    if(!main) return;
+    main.innerHTML = `
+      <div class="fill-page">
+        <div class="main-head">
+          <div class="dm-detail-head">
+            <button class="btn btn-secondary btn-sm" id="dm-back">${ICONS.chevL}Back</button>
+            <div>
+              <h1>${escapeHtml(w.name)}</h1>
+              <p class="sub mono">${escapeHtml((w.config && w.config.projectId) || w.id)}</p>
+            </div>
           </div>
-          <span class="mini-note" id="rc-count"></span>
+          <div class="head-actions">
+            <button class="btn btn-secondary" id="rc-refresh-btn">${ICONS.refresh}Refresh</button>
+          </div>
         </div>
-        <div id="rc-table-wrap"></div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary" id="rc-close-btn">Close</button>
-        <button class="btn btn-primary" id="rc-refresh-btn">${ICONS.refresh}Refresh</button>
+        <div class="toolbar">
+          <div class="toolbar-field toolbar-search">
+            <label class="toolbar-label" for="rc-search">Search</label>
+            <div class="search-wrap">${ICONS.search}
+              <input type="search" id="rc-search" placeholder="Filter parameters…" />
+            </div>
+          </div>
+          <span class="mini-note dm-rc-count" id="rc-count"></span>
+        </div>
+        <div class="table-card fill-flex" id="rc-table-wrap"></div>
       </div>`;
-    openModalShell(html, { xwide: true });
-    document.getElementById('rc-close').addEventListener('click', closeModal);
-    document.getElementById('rc-close-btn').addEventListener('click', closeModal);
+    document.getElementById('dm-back').addEventListener('click', () => this.goBack());
     document.getElementById('rc-refresh-btn').addEventListener('click', () => this.loadRemoteConfig(w));
     document.getElementById('rc-search').addEventListener('input', debounce(e => {
       this._rcSearch = e.target.value;
       this.renderRcRows();
     }, 120));
-    await this.loadRemoteConfig(w);
+    this.loadRemoteConfig(w);
   },
 
   async loadRemoteConfig(w){
@@ -351,7 +371,7 @@ Views.datamanager = {
       return;
     }
     wrap.innerHTML = `
-      <div class="table-scroll rc-table-scroll"><table>
+      <div class="table-scroll"><table>
         <thead><tr>
           <th>Parameter</th>
           <th>Value</th>
@@ -367,5 +387,11 @@ Views.datamanager = {
           </tr>`).join('')}
         </tbody>
       </table></div>`;
+    // This table lives on a full page now (not inside a modal), so the
+    // modal-overlay's delegated copy-button handler doesn't reach it —
+    // bind copy directly.
+    wrap.querySelectorAll('.copy-btn[data-copy]').forEach(b => {
+      b.addEventListener('click', () => copyText(b.getAttribute('data-copy'), b));
+    });
   }
 };
