@@ -34,7 +34,9 @@ Views.team = {
 
   filtered(){
     const q = this.search.trim().toLowerCase();
-    let list = [...App.developers].sort((a,b)=>a.name.localeCompare(b.name));
+    // active members first (A–Z), inactive ones grouped at the end (A–Z)
+    let list = [...App.developers].sort((a,b)=>
+      (a.active === false) - (b.active === false) || a.name.localeCompare(b.name));
     if(q){
       list = list.filter(d => d.name.toLowerCase().includes(q) || d.id.toLowerCase().includes(q)
         || (d.email||'').toLowerCase().includes(q) || (ROLE_LABELS[d.role]||'').toLowerCase().includes(q));
@@ -376,7 +378,7 @@ Views.team = {
     }
     confirmModal({
       title: 'Delete Developer?', danger: true, confirmLabel: 'Delete Developer',
-      message: `${escapeHtml(d.name)} and all their work-log entries will be permanently removed. Their login account (if any) should also be deleted in Supabase → Authentication → Users. Consider marking them inactive instead.`,
+      message: `${escapeHtml(d.name)} will be permanently removed. Their login account (if any) should also be deleted in Supabase → Authentication → Users. Consider marking them inactive instead.`,
       onConfirm: async ()=>{
         try{
           await apiDeleteDeveloper(id);
