@@ -19,25 +19,10 @@ function initialsOf(name){
 
 // ---------- dates & working-day calculation ----------
 
-// Recurring off days: Sundays only (Saturdays are working by default —
-// the admin marks specific ones off in the Work Calendar)
-function isAutoOffDay(date){
-  return date.getDay() === 0;
-}
-// Admin-managed calendar (loaded from Supabase app_settings at boot):
-// CUSTOM_HOLIDAYS = extra off days; CUSTOM_WORKDAYS = weekly-off days forced to working
-const CUSTOM_HOLIDAYS = new Set();
-const CUSTOM_WORKDAYS = new Set();
-function setCustomHolidays(dates, work){
-  CUSTOM_HOLIDAYS.clear();
-  CUSTOM_WORKDAYS.clear();
-  (dates || []).forEach(d => CUSTOM_HOLIDAYS.add(String(d).slice(0,10)));
-  (work  || []).forEach(d => CUSTOM_WORKDAYS.add(String(d).slice(0,10)));
-}
+// Off day: Sunday only. Saturday is a working day — Saturday offs and other
+// holidays go in each project's own holiday count, which is deducted separately.
 function isOffDay(date){
-  const iso = isoOfDate(date);
-  if(CUSTOM_WORKDAYS.has(iso)) return false;
-  return isAutoOffDay(date) || CUSTOM_HOLIDAYS.has(iso);
+  return date.getDay() === 0;
 }
 function parseDateOnly(str){
   if(!str) return null;
@@ -59,7 +44,8 @@ function addDaysIso(iso, n){
   d.setDate(d.getDate() + n);
   return isoOfDate(d);
 }
-function calculateWorkingDays(startStr, endStr){
+// Mon–Sat between two dates (inclusive), minus `holidays`. null if the range is invalid.
+function calculateWorkingDays(startStr, endStr, holidays){
   const start = parseDateOnly(startStr);
   const end = parseDateOnly(endStr);
   if(!start || !end || end < start) return null;
@@ -69,8 +55,19 @@ function calculateWorkingDays(startStr, endStr){
     if(!isOffDay(cur)) count++;
     cur.setDate(cur.getDate() + 1);
   }
-  return count;
+  return Math.max(0, count - Math.max(0, parseInt(holidays, 10) || 0));
 }
+// Working days a project took (has an end date) or has run so far (no end date → counted to today).
+// → { days, running } or null when there's no start date.
+function projectDays(p){
+  if(!p || !p.startDate) return null;
+  const running = !p.endDate;
+  const end = p.endDate || todayIso();
+  if(running && end < String(p.startDate).slice(0,10)) return { days: 0, running, upcoming: true };
+  const days = calculateWorkingDays(p.startDate, end, p.holidays);
+  return days === null ? null : { days, running };
+}
+function daysLabel(n){ return `${n} day${n===1?'':'s'}`; }
 const MONTH_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const MONTH_FULL = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const DOW_SHORT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];

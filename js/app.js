@@ -9,18 +9,8 @@ const App = {
   section: null,
   get isAdmin(){ return this.me && this.me.role === 'admin'; },
   get isLeader(){ return this.me && this.me.role === 'leader'; },
-  get canReview(){ return this.isAdmin || this.isLeader; },
-  // projects this user leads
-  get myLeadProjects(){ return this.projects.filter(p => p.leadId === (this.me && this.me.id)); },
-  // developers whose daily work this user reviews.
-  // Admins are managers, not developers — they're never in anyone's review list.
-  get myTeamDevIds(){
-    if(this.isAdmin) return this.developers.filter(d => d.role !== 'admin').map(d => d.id);
-    const ids = new Set();
-    this.myLeadProjects.forEach(p => { if(p.developerId) ids.add(p.developerId); });
-    if(this.me) ids.add(this.me.id);
-    return [...ids].filter(id => { const d = getDeveloper(id); return d && d.role !== 'admin'; });
-  }
+  // admins & leaders see every project and the team
+  get canReview(){ return this.isAdmin || this.isLeader; }
 };
 
 function getDeveloper(id){ return App.developers.find(d => d.id === id) || null; }
@@ -39,12 +29,7 @@ const SECTIONS = [
   { key: 'overview', label: 'Overview', icon: 'home',      show: () => true },
   { key: 'projects', label: 'Projects', icon: 'layers',    show: () => true },
   { key: 'team',     label: 'Team',     icon: 'users',     show: () => App.canReview },
-  { key: 'worklog',  label: 'My Daily Work', icon: 'clipboard', show: () => !App.isAdmin },
-  { key: 'review',   label: 'Review',   icon: 'check',     show: () => App.canReview },
-  { key: 'reports',  label: 'Reports',  icon: 'chart',     show: () => App.canReview },
-  { key: 'calendar', label: 'Calendar', icon: 'cal',       show: () => App.isAdmin },
-  { key: 'datamanager', label: 'ADM', icon: 'db', show: () => App.isAdmin },
-  { key: 'theme',    label: 'Theme',    icon: 'star',      show: () => App.isAdmin }
+  { key: 'theme',   label: 'Theme',    icon: 'star',      show: () => App.isAdmin }
 ];
 
 function renderNav(){
@@ -52,7 +37,6 @@ function renderNav(){
   nav.innerHTML = SECTIONS.filter(s => s.show()).map(s => `
     <button class="nav-item${App.section === s.key ? ' active' : ''}" data-section="${s.key}">
       ${ICONS[s.icon]}<span class="nav-label">${s.label}</span>
-      ${s.key === 'review' ? '<span class="nav-flag" id="nav-review-flag" style="display:none;"></span>' : ''}
     </button>`).join('')
     + `<button class="nav-item" id="nav-logout">${ICONS.logout}<span class="nav-label">Sign Out</span></button>`;
   nav.querySelectorAll('[data-section]').forEach(b => b.addEventListener('click', () => go(b.dataset.section)));
@@ -93,27 +77,6 @@ async function refreshCore(){
   const [devs, projects] = await Promise.all([apiLoadDevelopers(), apiLoadProjects()]);
   App.developers = devs;
   App.projects = projects;
-  // admin-managed holidays feed isOffDay() everywhere
-  try{
-    const h = await apiGetSetting('holidays');
-    if(h) setCustomHolidays(h.dates, h.work);
-  }catch(e){ /* table may not exist yet */ }
-}
-
-// Badge on the Review nav item: number of team devs with no entry today (working days only)
-async function updateReviewFlag(){
-  if(!App.canReview) return;
-  try{
-    const today = todayIso();
-    if(isOffDay(parseDateOnly(today))) return; // off day: no flags
-    const logs = await apiLoadLogs({ from: today, to: today });
-    const logged = new Set(logs.map(l => l.devId));
-    const missing = App.developers.filter(d =>
-      d.active !== false && d.userId && App.myTeamDevIds.includes(d.id) && !logged.has(d.id)
-    ).length;
-    const flag = document.getElementById('nav-review-flag');
-    if(flag && missing > 0){ flag.style.display = ''; flag.textContent = missing; }
-  }catch(e){ /* non-critical */ }
 }
 
 // ---------- boot ----------
@@ -146,7 +109,6 @@ async function updateReviewFlag(){
       if(stored && SECTIONS.some(s => s.key === stored && s.show())) start = stored;
     }catch(e){}
     go(start);
-    updateReviewFlag();
   }catch(err){
     bootEl.innerHTML = '<div class="inline-note danger" style="max-width:460px;">' + ICONS.warn + '<span>' + escapeHtml(err.message || 'Could not load the dashboard.') + '</span></div>';
   }

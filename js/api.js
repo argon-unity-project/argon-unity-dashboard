@@ -16,7 +16,8 @@ function rowToProject(row){
   return {
     id: row.id, name: row.name, developerId: row.developer_id, createdAt: row.created_at,
     startDate: row.start_date || null, endDate: row.end_date || null, remarks: row.remarks || '',
-    status: row.status || 'in_progress', leadId: row.lead_id || null
+    status: row.status || 'in_progress', leadId: row.lead_id || null,
+    holidays: Math.max(0, parseInt(row.holidays, 10) || 0)
   };
 }
 function rowToDeveloper(row){
@@ -25,15 +26,6 @@ function rowToDeveloper(row){
     gmail: row.gmail || '', discordUsername: row.discord_username || '', contactDetails: row.contact_details || '',
     userId: row.user_id || null, email: row.email || '', role: row.role || 'developer',
     mustChangePassword: row.must_change_password === true
-  };
-}
-function rowToLog(row){
-  return {
-    id: row.id, devId: row.dev_id, workDate: row.work_date,
-    projectId: row.project_id || null, otherWork: row.other_work || '',
-    description: row.description || '', hours: Number(row.hours) || 0,
-    status: row.status || 'pending', approvedBy: row.approved_by || null,
-    createdAt: row.created_at
   };
 }
 function isDuplicateKeyError(err){
@@ -156,13 +148,29 @@ async function apiLoadProjects(){
   if(error) throw error;
   return data.map(rowToProject);
 }
+// projects.holidays is added by supabase-project-holidays.sql. Until that runs,
+// saves still work (holidays is dropped) unless a non-zero holiday count was entered.
+function isMissingHolidaysColumn(err){
+  return !!err && (err.code === 'PGRST204' || err.code === '42703') && /holidays/i.test(err.message || '');
+}
+const HOLIDAYS_SQL_HINT = 'Holidays column missing — run supabase-project-holidays.sql in the Supabase SQL editor.';
+async function withHolidaysFallback(row, run){
+  let res = await run(row);
+  if(res.error && 'holidays' in row && isMissingHolidaysColumn(res.error)){
+    if(row.holidays > 0) throw new Error(HOLIDAYS_SQL_HINT);
+    const rest = Object.assign({}, row); delete rest.holidays;
+    res = await run(rest);
+  }
+  if(res.error) throw res.error;
+  return res.data;
+}
 async function apiInsertProject(p){
-  const { data, error } = await sb.from('projects').insert({
+  const data = await withHolidaysFallback({
     id: p.id, name: p.name, developer_id: p.developerId, created_at: p.createdAt,
     start_date: p.startDate, end_date: p.endDate, remarks: p.remarks || '',
-    status: p.status || 'in_progress', lead_id: p.leadId || null
-  }).select().single();
-  if(error) throw error;
+    status: p.status || 'in_progress', lead_id: p.leadId || null,
+    holidays: Math.max(0, parseInt(p.holidays, 10) || 0)
+  }, row => sb.from('projects').insert(row).select().single());
   return rowToProject(data);
 }
 async function apiUpdateProject(id, fields){
@@ -174,51 +182,11 @@ async function apiUpdateProject(id, fields){
   if('remarks' in fields) patch.remarks = fields.remarks || '';
   if('status' in fields) patch.status = fields.status;
   if('leadId' in fields) patch.lead_id = fields.leadId;
-  const { error } = await sb.from('projects').update(patch).eq('id', id);
-  if(error) throw error;
+  if('holidays' in fields) patch.holidays = Math.max(0, parseInt(fields.holidays, 10) || 0);
+  await withHolidaysFallback(patch, row => sb.from('projects').update(row).eq('id', id));
 }
 async function apiDeleteProject(id){
   const { error } = await sb.from('projects').delete().eq('id', id);
-  if(error) throw error;
-}
-
-// ---------- work logs ----------
-async function apiLoadLogs(filters){
-  // filters: {from, to, devId, projectId, limit}
-  let q = sb.from('work_logs').select('*').order('work_date', { ascending: false }).order('created_at', { ascending: false });
-  if(filters){
-    if(filters.from) q = q.gte('work_date', filters.from);
-    if(filters.to) q = q.lte('work_date', filters.to);
-    if(filters.devId) q = q.eq('dev_id', filters.devId);
-    if(filters.projectId) q = q.eq('project_id', filters.projectId);
-    if(filters.limit) q = q.limit(filters.limit);
-  }
-  const { data, error } = await q;
-  if(error) throw error;
-  return data.map(rowToLog);
-}
-async function apiInsertLog(l){
-  const { data, error } = await sb.from('work_logs').insert({
-    dev_id: l.devId, work_date: l.workDate, project_id: l.projectId || null,
-    other_work: l.otherWork || '', description: l.description, hours: l.hours
-  }).select().single();
-  if(error) throw error;
-  return rowToLog(data);
-}
-async function apiUpdateLog(id, fields){
-  const patch = {};
-  if('workDate' in fields) patch.work_date = fields.workDate;
-  if('projectId' in fields) patch.project_id = fields.projectId;
-  if('otherWork' in fields) patch.other_work = fields.otherWork || '';
-  if('description' in fields) patch.description = fields.description;
-  if('hours' in fields) patch.hours = fields.hours;
-  if('status' in fields) patch.status = fields.status;
-  if('approvedBy' in fields) patch.approved_by = fields.approvedBy;
-  const { error } = await sb.from('work_logs').update(patch).eq('id', id);
-  if(error) throw error;
-}
-async function apiDeleteLog(id){
-  const { error } = await sb.from('work_logs').delete().eq('id', id);
   if(error) throw error;
 }
 
@@ -237,40 +205,5 @@ async function apiSaveSetting(key, value){
 async function apiDeleteSetting(key){
   requireSb();
   const { error } = await sb.from('app_settings').delete().eq('key', key);
-  if(error) throw error;
-}
-// ---------- firebase webapps (Data Manager) ----------
-function rowToFirebaseWebapp(row){
-  return {
-    id: row.id, name: row.name, config: row.config || {},
-    createdAt: row.created_at, createdBy: row.created_by || null
-  };
-}
-async function apiLoadFirebaseWebapps(){
-  const { data, error } = await sb.from('firebase_webapps').select('*');
-  if(error) throw error;
-  return data.map(rowToFirebaseWebapp);
-}
-async function apiNextFbwId(){
-  const { data, error } = await sb.rpc('next_fbw_id');
-  if(error) throw error;
-  return data;
-}
-async function apiInsertFirebaseWebapp(w){
-  const { data, error } = await sb.from('firebase_webapps').insert({
-    id: w.id, name: w.name, config: w.config, created_by: w.createdBy || null
-  }).select().single();
-  if(error) throw error;
-  return rowToFirebaseWebapp(data);
-}
-async function apiUpdateFirebaseWebapp(id, fields){
-  const patch = {};
-  if('name' in fields) patch.name = fields.name;
-  if('config' in fields) patch.config = fields.config;
-  const { error } = await sb.from('firebase_webapps').update(patch).eq('id', id);
-  if(error) throw error;
-}
-async function apiDeleteFirebaseWebapp(id){
-  const { error } = await sb.from('firebase_webapps').delete().eq('id', id);
   if(error) throw error;
 }

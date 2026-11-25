@@ -1,7 +1,20 @@
 // ============================================================
-// VIEW: Projects — catalog with status, lead, CRUD (role-gated)
+// VIEW: Projects — catalog with status, working days, CRUD (role-gated)
 // ============================================================
 window.Views = window.Views || {};
+
+// "12 days" (done) · "8 days" + live dot (still running) · "—" (no start date)
+function daysChip(p){
+  const pd = projectDays(p);
+  if(!pd) return '<span class="days-chip none">—</span>';
+  if(pd.upcoming) return '<span class="days-chip upcoming" title="Starts in the future">Upcoming</span>';
+  const hol = p.holidays ? ` · −${p.holidays} holiday${p.holidays===1?'':'s'}` : '';
+  if(pd.running && !['in_progress','testing'].includes(p.status))
+    return `<span class="days-chip paused" title="Not active · working days since start (Mon–Sat${hol})">${daysLabel(pd.days)}</span>`;
+  return pd.running
+    ? `<span class="days-chip running" title="Working days so far (Mon–Sat${hol})"><span class="live-dot"></span>${daysLabel(pd.days)}</span>`
+    : `<span class="days-chip done" title="Working days taken (Mon–Sat${hol})">${daysLabel(pd.days)}</span>`;
+}
 
 Views.projects = {
   search: '',
@@ -55,17 +68,18 @@ Views.projects = {
     if(q){
       list = list.filter(p => {
         const dev = getDeveloper(p.developerId);
-        const lead = getDeveloper(p.leadId);
         return p.id.toLowerCase().includes(q) || p.name.toLowerCase().includes(q)
-          || (dev && dev.name.toLowerCase().includes(q)) || (lead && lead.name.toLowerCase().includes(q));
+          || (dev && dev.name.toLowerCase().includes(q));
       });
     }
     if(this.statusFilter) list = list.filter(p => p.status === this.statusFilter);
     const dir = this.sort.endsWith('desc') ? -1 : 1;
     const key = this.sort.split('-')[0];
+    const daysOf = p => { const d = projectDays(p); return d ? d.days : -1; };
     list.sort((a,b)=>{
       if(key==='id') return a.id.localeCompare(b.id, undefined, {numeric:true}) * dir;
       if(key==='name') return a.name.localeCompare(b.name) * dir;
+      if(key==='days') return (daysOf(a) - daysOf(b)) * dir;
       return 0;
     });
     return list;
@@ -91,23 +105,22 @@ Views.projects = {
           <th class="sortable" data-sort="name">Game${this.arrow('name')}</th>
           <th style="width:128px;">Status</th>
           ${showDevCol ? '<th style="width:150px;">Developer</th>' : ''}
-          <th style="width:150px;">Lead</th>
           <th style="width:100px;">Start</th>
           <th style="width:100px;">End</th>
+          <th class="sortable" data-sort="days" style="width:120px;">Days${this.arrow('days')}</th>
           <th style="width:110px;"></th>
         </tr></thead>
         <tbody>
           ${list.map(p=>{
             const dev = getDeveloper(p.developerId);
-            const lead = getDeveloper(p.leadId);
             return `<tr data-id="${p.id}">
               <td><span class="id-badge">${p.id}</span></td>
               <td><span class="game-name" title="${escapeHtml(p.name)}">${escapeHtml(p.name)}</span></td>
               <td>${statusChip(p.status)}</td>
               ${showDevCol ? `<td class="dev-cell ${dev?'':'unassigned'}">${dev ? `<span class="dev-name-wrap">${devAvatar(dev)}<span class="truncate">${escapeHtml(dev.name)}</span></span>` : 'Unassigned'}</td>` : ''}
-              <td class="dev-cell ${lead?'':'unassigned'}">${lead ? `<span class="dev-name-wrap">${devAvatar(lead)}<span class="truncate">${escapeHtml(lead.name)}</span></span>` : '—'}</td>
               <td class="date-cell">${p.startDate ? formatDateShort(p.startDate) : '—'}</td>
               <td class="date-cell">${p.endDate ? formatDateShort(p.endDate) : '—'}</td>
+              <td>${daysChip(p)}</td>
               <td><div class="actions-cell">
                 <button class="icon-btn accent" data-action="view" title="View details">${ICONS.view}</button>
                 ${canEditProject(p) ? `<button class="icon-btn" data-action="edit" title="Edit">${ICONS.edit}</button>` : ''}
@@ -141,10 +154,8 @@ Views.projects = {
     if(!p) return;
     const dev = getDeveloper(p.developerId);
     const lead = getDeveloper(p.leadId);
-    const workDays = calculateWorkingDays(p.startDate, p.endDate);
-    let logs = [];
-    try{ logs = await apiLoadLogs({ projectId: id, limit: 60 }); }catch(e){}
-    const totalTasks = logs.reduce((s,l)=>s + descLines(l.description).length, 0);
+    const pd = projectDays(p);
+    const daysSub = pd ? `Mon–Sat${p.holidays ? ` · −${p.holidays} holiday${p.holidays===1?'':'s'}` : ''}${pd.running ? ' · so far' : ''}` : '';
     const html = `
       <div class="modal-header">
         <div class="detail-hero">
@@ -157,7 +168,7 @@ Views.projects = {
                 <button type="button" class="copy-btn" data-copy="${p.id}" title="Copy Project ID">${ICONS.copy}</button>
               </span>
               ${statusChip(p.status)}
-              ${totalTasks ? `<span class="tasks-chip">${totalTasks} task${totalTasks===1?'':'s'} logged</span>` : ''}
+              ${daysChip(p)}
             </div>
           </div>
         </div>
@@ -170,24 +181,12 @@ Views.projects = {
           <div class="detail-row-3">
             ${detailCard({ icon: ICONS.cal, label: 'Start Date', value: p.startDate ? formatDateLong(p.startDate) : '', tone: 'teal' })}
             ${detailCard({ icon: ICONS.flag, label: 'End Date', value: p.endDate ? formatDateLong(p.endDate) : '', tone: 'teal' })}
-            ${detailCard({ icon: ICONS.clock, label: 'Total Days', tone: 'amber',
-              value: workDays === null ? '' : `${workDays} working day${workDays===1?'':'s'}`,
-              emptyText: 'Set both dates', sub: workDays === null ? '' : 'Excl. off days' })}
+            ${detailCard({ icon: ICONS.clock, label: pd && pd.running ? 'Days so far' : 'Total Days', tone: 'amber',
+              value: pd ? `${pd.days} working day${pd.days===1?'':'s'}` : '',
+              emptyText: 'Set a start date', sub: daysSub })}
           </div>
           ${detailCard({ span2: true, icon: ICONS.note, label: 'Remarks',
             html: p.remarks ? escapeHtml(p.remarks).replace(/\n/g,'<br>') : '', value: p.remarks || '', emptyText: 'No remarks' })}
-          <div class="detail-card span-2" style="flex-direction:column;gap:8px;">
-            <span class="d-label" style="display:flex;align-items:center;gap:6px;">${ICONS.clipboard} Work history ${logs.length ? `· ${logs.length} entr${logs.length===1?'y':'ies'} · ${totalTasks} task${totalTasks===1?'':'s'}` : ''}</span>
-            ${logs.length ? `<div style="max-height:190px;overflow-y:auto;width:100%;">${logs.map(l=>{
-              const d2 = getDeveloper(l.devId);
-              return `<div class="log-entry" style="padding:9px 2px;">
-                <div class="log-main">
-                  <div class="log-top"><span class="log-proj" style="font-size:12.5px;">${escapeHtml(d2 ? d2.name : l.devId)}</span><span class="muted" style="font-size:11px;">${formatDateFriendly(l.workDate)}</span></div>
-                  <div class="log-desc" style="font-size:12.5px;">${descriptionHtml(l.description)}</div>
-                </div>
-              </div>`;
-            }).join('')}</div>` : '<span class="d-val muted">No work logged on this project yet.</span>'}
-          </div>
         </div>
       </div>
       <div class="modal-footer">
@@ -264,7 +263,18 @@ Views.projects = {
               <p class="error-text"></p>
             </div>
           </div>
-          <div id="pf-workdays-hint" class="dp-summary span-2"></div>
+          <div class="field span-2 hol-field" id="field-hol">
+            <label for="pf-hol">Holidays <span class="opt-tag">Deducted from working days</span></label>
+            <div class="hol-row">
+              <div class="hol-stepper">
+                <button type="button" class="hol-step" data-step="-1" aria-label="One less holiday">−</button>
+                <input type="number" id="pf-hol" min="0" max="365" step="1" inputmode="numeric" value="${editing ? (editing.holidays || 0) : 0}" />
+                <button type="button" class="hol-step" data-step="1" aria-label="One more holiday">+</button>
+              </div>
+              <div id="pf-workdays-hint" class="dp-summary"></div>
+            </div>
+            <p class="error-text"></p>
+          </div>
           <div class="field span-2">
             <label for="pf-remarks">Remarks <span class="opt-tag">Optional</span></label>
             <textarea id="pf-remarks" rows="2" placeholder="Optional notes…" maxlength="500">${editing ? escapeHtml(editing.remarks||'') : ''}</textarea>
@@ -290,13 +300,23 @@ Views.projects = {
     const updateHint = ()=>{
       const s = document.getElementById('pf-start').value;
       const e2 = document.getElementById('pf-end').value;
+      const hol = Math.max(0, parseInt(document.getElementById('pf-hol').value, 10) || 0);
       const hintEl = document.getElementById('pf-workdays-hint');
-      if(!s || !e2){ hintEl.innerHTML = ''; return; }
-      const days = calculateWorkingDays(s, e2);
+      if(!s){ hintEl.innerHTML = `<span class="dp-summary-note">Set a start date to see working days.</span>`; return; }
+      const days = calculateWorkingDays(s, e2 || todayIso(), hol);
       hintEl.innerHTML = days === null
-        ? `<span class="workdays-chip danger">${ICONS.warn}<span>End date must be on or after the start date.</span></span>`
-        : `<span class="workdays-chip">${ICONS.clock}<span>${days} working day${days===1?'':'s'}</span></span><span class="dp-summary-note">Excludes Sundays &amp; marked holidays</span>`;
+        ? (e2 ? `<span class="workdays-chip danger">${ICONS.warn}<span>End date must be on or after the start date.</span></span>`
+              : `<span class="dp-summary-note">Starts in the future.</span>`)
+        : `<span class="workdays-chip">${ICONS.clock}<span>${days} working day${days===1?'':'s'}${e2 ? '' : ' so far'}</span></span><span class="dp-summary-note">Mon–Sat${hol ? ` − ${hol} holiday${hol===1?'':'s'}` : ''}</span>`;
     };
+    const holEl = document.getElementById('pf-hol');
+    holEl.addEventListener('input', ()=>{ setFieldError('field-hol',''); updateHint(); });
+    document.querySelectorAll('.hol-step').forEach(b => b.addEventListener('click', ()=>{
+      const v = Math.max(0, Math.min(365, (parseInt(holEl.value, 10) || 0) + Number(b.dataset.step)));
+      holEl.value = v;
+      setFieldError('field-hol','');
+      updateHint();
+    }));
     document.getElementById('pf-start').addEventListener('change', ()=>{
       const s = document.getElementById('pf-start').value;
       const endHidden = document.getElementById('pf-end');
@@ -323,7 +343,16 @@ Views.projects = {
     const startDate = document.getElementById('pf-start').value || null;
     const endDate = document.getElementById('pf-end').value || null;
     const remarks = document.getElementById('pf-remarks').value.trim();
+    const holRaw = document.getElementById('pf-hol').value.trim();
+    const holidays = holRaw === '' ? 0 : Number(holRaw);
     let valid = true;
+    if(!Number.isInteger(holidays) || holidays < 0 || holidays > 365){
+      setFieldError('field-hol', 'Enter a whole number from 0 to 365.'); valid = false;
+    } else if(startDate && endDate && holidays > 0){
+      const raw = calculateWorkingDays(startDate, endDate || todayIso(), 0);
+      if(raw !== null && holidays > raw){ setFieldError('field-hol', `Can't be more than the ${raw} working days in this range.`); valid = false; }
+      else setFieldError('field-hol', '');
+    } else setFieldError('field-hol', '');
     if(!name){ setFieldError('field-name', 'Enter a game name.'); valid = false; }
     else if(name.length < 2){ setFieldError('field-name', 'Game name must be at least 2 characters.'); valid = false; }
     else setFieldError('field-name', '');
@@ -335,7 +364,7 @@ Views.projects = {
     const btn = document.getElementById('pf-save');
     btn.disabled = true;
     try{
-      const fields = { name, status, developerId, startDate, endDate, remarks };
+      const fields = { name, status, developerId, startDate, endDate, remarks, holidays };
       if(App.isAdmin) fields.leadId = leadSel.value || null;
       if(projectId){
         await apiUpdateProject(projectId, fields);
@@ -360,7 +389,7 @@ Views.projects = {
     if(!p) return;
     confirmModal({
       title: 'Delete Project?', danger: true, confirmLabel: 'Delete Project',
-      message: `“${escapeHtml(p.name)}” (${p.id}) will be permanently removed. Its work-log entries stay but lose the project link. This can't be undone.`,
+      message: `“${escapeHtml(p.name)}” (${p.id}) will be permanently removed. This can't be undone.`,
       onConfirm: async ()=>{
         try{
           await apiDeleteProject(id);
